@@ -207,7 +207,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       timeline: tl,
       modelUrl: mapModel.url,
       modelUnitLength: mapModel.isHero ? mapModel.length : KENNEY_UNIT_LENGTH,
-      displayLengthM: 16,
+      displayLengthM: 22,
       mapBearingOffset: mapModel.mapBearingOffset,
       paintHex,
       light: s.light,
@@ -386,7 +386,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       if (hudMiles.current) hudMiles.current.textContent = smp.miles.toFixed(1);
       if (hudElapsed.current) hudElapsed.current.textContent = formatElapsed(s.t);
       if (hudClock.current) hudClock.current.textContent = formatClock(trip.start, s.t);
-      const sc = scoreDeltaAt(tl.events, s.t);
+      const sc = Math.round(scoreDeltaAt(tl.events, s.t) * 10) / 10;
       if (sc !== s.lastScore && hudScore.current) {
         s.lastScore = sc;
         hudScore.current.textContent = sc === 0 ? "±0" : sc > 0 ? `+${sc}` : `−${Math.abs(sc)}`;

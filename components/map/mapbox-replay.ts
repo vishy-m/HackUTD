@@ -7,7 +7,7 @@ import { eventMarkerEl, mapboxToken, type CameraMode, type CarState, type Replay
 
 type ModelSourceLike = { setModels(models: Record<string, unknown>): void };
 
-const CHASE = { back: 105, up: 58, ahead: 30 }; // meters
+const CHASE = { back: 110, up: 88, ahead: 30 }; // high enough to clear typical low-rise buildings // meters
 const OVERHEAD = { back: 120, up: 820 };
 
 export function createMapboxReplay(init: ReplayMapInit): ReplayMap {
@@ -30,6 +30,8 @@ export function createMapboxReplay(init: ReplayMapInit): ReplayMap {
         lightPreset: init.light,
         showPointOfInterestLabels: false,
         showTransitLabels: false,
+        // Road-name labels render above every slot (incl. "top") and would cover the car.
+        showRoadLabels: false,
       },
     },
   });

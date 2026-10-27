@@ -1,13 +1,15 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { BetaMessageParam } from "@anthropic-ai/sdk/resources/beta/messages/messages";
 import type { AgentChatRequest, MoveType, WhatIfOverrides } from "../types";
+import { getTrip } from "../data";
 import { agentContext, getDashboard } from "../server/dashboard";
 import { getState } from "../server/store";
 import { getClient, friendlyError, modelConfig } from "./client";
 import { systemPrompt } from "./prompt";
 import { checkGrounding } from "./grounding";
-import { agentTools, executeTool, overrideMove, type Emit, type ToolContext } from "./tools";
+import { agentTools, executeTool, type Emit, type ToolContext } from "./tools";
 import { templateRecommendation, topOptions } from "./recommendations";
+import { offlineIntent } from "./offline-intents";
 
 function emitText(text: string, emit: Emit) {
   for (const delta of text.match(/[\s\S]{1,160}(?:\s|$)|[\s\S]{1,160}/g) ?? []) emit({ type: "text", delta });
@@ -15,14 +17,8 @@ function emitText(text: string, emit: Emit) {
 export async function offlineChat(request: AgentChatRequest, context: ToolContext) {
   const dashboard = getDashboard(request.personaId);
   const message = request.message.toLowerCase();
-  const overrides: WhatIfOverrides = {};
-  const miles = message.match(/([\d,]+(?:\.\d+)?)\s*(?:miles?|mi)\s*(?:a|per|\/|each)?\s*(?:month|mo)\b/);
-  const extra = message.match(/(?:extra|additional)\s*\$?([\d,]+(?:\.\d+)?)/);
-  if (miles) overrides.monthlyMiles = Number(miles[1].replaceAll(",", ""));
-  if (extra) overrides.extraPrincipal = Number(extra[1].replaceAll(",", ""));
-  let moveType: MoveType = /insur|score|brak/.test(message) ? "insurance" : /protect|tire|care/.test(message) ? "protection" : /payment|refinanc|payoff|principal/.test(message) ? "payment" : dashboard.ranked[0]?.moveType ?? "lease-end";
+  const { overrides, moveType, replay } = offlineIntent(request.message, dashboard);
   const controls = Object.entries(overrides) as [keyof WhatIfOverrides, number][];
-  if (controls.length) moveType = overrideMove(controls[0][0], dashboard.persona.contract.kind === "lease");
   for (const [control, value] of controls) {
     const result = await executeTool("set_whatif", { control, value }, context);
     if (result.isError) { emitText("That what-if value is outside the supported range. Try a smaller value.", context.emit); return; }
@@ -30,9 +26,23 @@ export async function offlineChat(request: AgentChatRequest, context: ToolContex
   if (/more detail|show.*math/.test(message)) await executeTool("update_preference", { key: "detailLevel", value: "show-math" }, context);
   if (/brief|shorter|less detail/.test(message)) await executeTool("update_preference", { key: "detailLevel", value: "brief" }, context);
   if (/\btable\b/.test(message)) await executeTool("update_preference", { key: "format", value: "table" }, context);
-  if (/replay|worst trip|trip.*hurt/.test(message) && dashboard.persona.consent.driving) {
-    const trip = [...dashboard.trips].sort((a, b) => a.score - b.score)[0];
-    if (trip) await executeTool("open_trip_replay", { tripId: trip.id }, context);
+  if (replay) {
+    if (!dashboard.persona.consent.driving) {
+      emitText("Enable driving consent to review your recorded trips.", context.emit);
+      return;
+    }
+    const trip = dashboard.trips.filter(trip => trip.showcase).sort((a, b) => a.score - b.score)
+      .map(trip => getTrip(trip.id)).find(trip => trip && trip.path.length > 1);
+    if (!trip) {
+      emitText("There is no recorded showcase trip available to replay.", context.emit);
+      return;
+    }
+    const event = [...trip.events].filter(event => event.scoreDelta < 0).sort((a, b) => a.scoreDelta - b.scoreDelta || a.t - b.t)[0];
+    const result = await executeTool("open_trip_replay", { tripId: trip.id, ...(event ? { focusEventT: event.t } : {}) }, context);
+    if (result.isError) { emitText("This replay is unavailable. Please try again.", context.emit); return; }
+    context.evidence.push(trip);
+    emitText(`Opening your lowest-scoring showcase trip to ${trip.destinationLabel} (score ${trip.score}).${event ? ` The replay focuses on its largest recorded score drop: ${event.type.replaceAll("-", " ")}.` : " This trip has no recorded event to focus on."}`, context.emit);
+    return;
   }
   const toolName = `compute_${moveType.replaceAll("-", "_")}_options`;
   const result = await executeTool(toolName, { overrides }, context);

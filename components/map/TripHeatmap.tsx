@@ -222,7 +222,8 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       raf = requestAnimationFrame(frame);
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      if (!st.current.visible) return;
+      // Paused while off-screen or while the 3D replay is open over the dashboard.
+      if (!st.current.visible || useUiStore.getState().replay !== null) return;
       const reduced = st.current.reduced;
       st.current.t = reduced ? LOOP : (st.current.t + (dt * (LOOP + TRAIL)) / LOOP_SECONDS) % (LOOP + TRAIL);
       const hov = hoverRef.current ? visibleRows.find((r) => r.id === hoverRef.current) : undefined;

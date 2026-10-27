@@ -81,6 +81,8 @@ function hasWebGL() {
 export default function HeroCar({ vehicle, upgradePreview, className, hotspotLabels, onHotspotSelect }: HeroCarProps) {
   const reducedMotion = useUiStore((s) => s.reducedMotion);
   const activeHotspot = useUiStore((s) => s.activeHotspot);
+  // Pause the hero render loop while the 3D replay is open (one heavy WebGL view at a time).
+  const replayOpen = useUiStore((s) => s.replay !== null);
   const setHotspot = useUiStore((s) => s.setHotspot);
   const [webgl] = useState<boolean | null>(() => (typeof window === "undefined" ? null : hasWebGL()));
   const [visible, setVisible] = useState(true);
@@ -139,7 +141,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
           <Canvas
             shadows={{ type: THREE.PCFShadowMap }}
             dpr={[1, 1.5]}
-            frameloop={visible ? "always" : "never"}
+            frameloop={visible && !replayOpen ? "always" : "never"}
             camera={{ position: HOME.pos.toArray(), fov: 32, near: 0.1, far: 80 }}
             gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
             onCreated={({ gl }) => {

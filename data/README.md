@@ -25,14 +25,25 @@ The 90-day window is July 29–October 26 UTC. Trip scores use the same exported
 Drive Pulse-style formula as the engines, not Toyota's proprietary algorithm.
 Three older monthly buckets are explicitly extrapolated; the recent buckets
 cover 30-day periods. Events annotate score penalties and lie on replay paths.
+Mileage and telemetry use separate seeded random streams, so tuning events does
+not alter the mileage history. Maya's rush-hour commutes include braking and
+acceleration, and Dallas runs include speeding. Her final eight trips model a
+recent smoother-driving streak. Only Raj's outbound Big Bend showcase is
+deliberately spotless; his other trips retain occasional driving penalties.
 
 ## Material scenario assumptions
 
 - Maya's 41,200-mile odometer is inconsistent with the brief's roughly 4,000-mile
   projected overage if her lease started at zero. The synthetic used/demo lease
-  therefore starts at **7,000 miles**, explicitly recorded in `rates.json` and
+  therefore starts at **7,500 miles**, explicitly recorded in `rates.json` and
   each lease option's math. Her 36,000-mile allowance is miles *driven during the
-  lease*: the odometer limit is 43,000. Her contract rate is **$0.20/excess mile**.
+  lease*: the odometer limit is 43,500. Her contract rate is **$0.25/excess mile**.
+  The contract field is the only pricing source for excess mileage. At 1,464.72
+  mi/month, projected excess is **3,558.88 mi** (about 4k); the **$889.72** mileage
+  charge plus **$350** disposition fee gives a **$1,239.72** return invoice.
+  The 7,500-mile starting assumption retains positive equity (**$48.75**) and a
+  **$1,288.47** buyout advantage with the corrected contract rate. At 900 mi/month,
+  excess falls to **1,300 mi** and the return invoice to **$675**.
 - Buyout advantage is return invoice plus equity, where equity is market value
   minus the tax-inclusive buyout. It compares immediate net asset positions;
   it does not claim lifetime savings or include future finance interest, repairs

@@ -235,14 +235,19 @@ export function scoreDeltaAt(events: TripEvent[], t: number): number {
 }
 
 /** Events that get a callout (speeding-start is announced with the end's score delta). */
+const pts = (n: number) => {
+  const v = Math.round(Math.abs(n) * 10) / 10;
+  return `${n < 0 ? "−" : n > 0 ? "+" : ""}${v} score pt${v === 1 ? "" : "s"}`;
+};
+
 export function calloutText(e: TripEvent, events: TripEvent[]): string {
   const st = EVENT_STYLE[e.type];
   let delta = e.scoreDelta;
   if (e.type === "speeding-start") {
     const end = events.find((x) => x.type === "speeding-end" && x.t > e.t);
     delta = end?.scoreDelta ?? 0;
-    return `${st.label} · ${delta ? `${delta} score pts` : "watch the limit"}`;
+    return `${st.label} · ${delta ? pts(delta) : "watch the limit"}`;
   }
-  if (e.type === "speeding-end") return `${st.label} · ${e.scoreDelta ? `${e.scoreDelta} score pts for the stretch` : "nice"}`;
-  return `${st.label} · ${delta > 0 ? "+" : delta < 0 ? "−" : ""}${Math.abs(delta)} score pt${Math.abs(delta) === 1 ? "" : "s"}`;
+  if (e.type === "speeding-end") return `${st.label} · ${e.scoreDelta ? `${pts(e.scoreDelta)} for the stretch` : "nice"}`;
+  return `${st.label} · ${pts(delta)}`;
 }

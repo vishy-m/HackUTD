@@ -24,7 +24,7 @@
     "monthsRemaining": 4,
     "monthlyPayment": 389,
     "annualMileageAllowance": 12000,
-    "overageRatePerMile": 0.2,
+    "overageRatePerMile": 0.25,
     "residualValue": 19400,
     "purchaseOptionFee": 300,
     "dispositionFee": 350

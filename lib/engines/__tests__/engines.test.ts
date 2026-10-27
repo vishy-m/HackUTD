@@ -7,6 +7,7 @@ import { computeTripScore } from '../score';
 import { amortize, computePaymentOptions } from '../payment';
 import { computeProtectionOptions } from '../protection';
 import { computeDrivingSummary } from '../driving';
+import { computeLeaseEndOptions } from '../lease-end';
 import { payment, addMonths } from '../common';
 import type { PersonaId, MoveType, HandoffPacket } from '../../types';
 const runtime=(id:PersonaId)=>{const p=getPersona(id);return {preferences:p.preferences,consent:p.consent};};
@@ -40,17 +41,60 @@ describe('persona acceptance criteria',()=>{
     expect(buyout.savingsVsBaseline).toBeLessThanOrEqual(1300);
     expect(buyout.equity).toBeGreaterThan(0);
     expect(buyout.totalCost).toBe(20931.25);
+    expect(buyout.equity).toBe(48.75);
+    expect(buyout.savingsVsBaseline).toBe(1288.47);
     expect(buyout.deadline).toBe('2027-01-28');
     const over=buyout.math.find(m=>m.label==='Excess miles')!;
     expect(number(over.result)).toBeGreaterThan(3500);
     expect(number(over.result)).toBeLessThan(4500);
+    expect(number(over.result)).toBe(3558.88);
+    expect(buyout.assumptions.find(a=>a.label==='Lease starting odometer')?.value).toBe('7500 mi; synthetic used/demo lease when nonzero');
+    expect(option('maya','lease-end','lease-end:return').totalCost).toBe(1239.72);
   });
   it('Maya 900 miles/month and zero projection horizon lower mileage charges',()=>{
     const baseline=option('maya','lease-end','lease-end:return');
     const less=runWhatIf('maya','lease-end',{monthlyMiles:900},runtime('maya')).options[0];
     const now=runWhatIf('maya','lease-end',{monthsAhead:0},runtime('maya')).options[0];
     expect(less.totalCost).toBeLessThan(baseline.totalCost!);
+    expect(less.totalCost).toBe(675);
+    expect(less.math.find(m=>m.label==='Excess miles')?.result).toBe('1300 mi');
     expect(now.totalCost).toBe(350);
+  });
+  it('every lease comparison and mileage what-if uses the supplied contract rate',()=>{
+    for(const id of ['maya','raj'] as const) {
+      const p=getPersona(id);
+      if(p.contract.kind!=='lease') throw new Error('Expected lease fixture');
+      expect(p.contract.overageRatePerMile).toBe(.25);
+      const driving=computeDrivingSummary(p,getTrips(id));
+      // A different contract rate catches hardcoded persona or reference-table pricing.
+      for(const rate of [.25,.37]) {
+        p.contract.overageRatePerMile=rate;
+        const result=computeLeaseEndOptions(p,driving,{monthlyMiles:9000});
+        for(const o of result.options) {
+          const excess=number(o.math.find(m=>m.label==='Excess miles')!.result);
+          const charge=o.math.find(m=>m.label==='Excess mileage charge')!;
+          expect(excess).toBeGreaterThan(0);
+          expect(number(charge.result)).toBeCloseTo(excess*rate,2);
+          expect(charge.formula).toBe(`${excess} × $${rate.toFixed(2)}`);
+        }
+        const returned=result.options.find(o=>o.id==='lease-end:return')!;
+        const buyout=result.options.find(o=>o.id==='lease-end:buyout')!;
+        const charge=number(returned.math.find(m=>m.label==='Excess mileage charge')!.result);
+        expect(returned.totalCost).toBeCloseTo(charge+p.contract.dispositionFee,2);
+        expect(buyout.savingsVsBaseline).toBeCloseTo(returned.totalCost!+buyout.equity!,2);
+      }
+    }
+  });
+  it('Maya has a realistic score, recent smooth streak and three material driving factors',()=>{
+    const d=dashboard('maya');
+    expect(d.driving.score).toBeGreaterThanOrEqual(80);
+    expect(d.driving.score).toBeLessThanOrEqual(84);
+    expect(d.driving.smoothStreak).toBe(8);
+    expect(d.driving.scoreFactors.filter(f=>f.impact<=-1).map(f=>f.factor)).toEqual(['Harsh braking','Fast acceleration','Speeding']);
+    expect(d.ranked[0].optionId).toBe('lease-end:buyout');
+    expect(d.ranked[1].optionId).toBe('protection:service');
+    expect(option('maya','insurance','insurance:ubi-current').monthlyCost).toBe(162.80);
+    expect(option('maya','insurance','insurance:ubi-current').savingsVsBaseline).toBe(-81.60);
   });
   it('Raj is under allowance with exactly zero excess mileage charge',()=>{
     const result=option('raj','lease-end','lease-end:return');
@@ -191,6 +235,26 @@ describe('static data and route integrity',()=>{
     expect(worst.events.filter(e=>e.type==='hard-brake')).toHaveLength(3);
     const bigBend=getTrips('raj').find(t=>t.showcase&&t.destinationLabel==='Big Bend NP')!;
     expect(bigBend.miles).toBeGreaterThan(400);expect(bigBend.score).toBe(100);expect(bigBend.events).toEqual([]);
+  });
+  it('only Raj Big Bend is spotless; other persona histories have bounded smooth streaks',()=>{
+    expect(listPersonas().flatMap(p=>getTrips(p.id)).filter(t=>t.score===100).map(t=>t.id)).toEqual(['raj-018']);
+    for(const id of ['garcia','raj'] as const) {
+      const d=dashboard(id).driving;
+      expect(d.score).toBeGreaterThanOrEqual(90);
+      expect(d.score).toBeLessThan(100);
+      expect(d.smoothStreak).toBeGreaterThan(0);
+      expect(d.smoothStreak).toBeLessThanOrEqual(13);
+    }
+  });
+  it('Maya opening replay shows I-35 braking and Dallas runs show speeding',()=>{
+    const opening=getTrip('maya-001')!;
+    expect(opening.showcase).toBe(true);
+    expect(opening.category).toBe('commute');
+    expect(opening.score).toBe(82);
+    expect(opening.events.map(e=>e.type)).toEqual(['hard-brake','hard-brake','speeding-start','speeding-end']);
+    const roadTrips=getTrips('maya').filter(t=>t.category==='road-trip');
+    expect(roadTrips).toHaveLength(4);
+    expect(roadTrips.every(t=>t.speedingPct>=.25&&t.events.some(e=>e.type==='speeding-start'))).toBe(true);
   });
   it('loaders are defensive copies and unknown trips are undefined',()=>{
     const p=getPersona('maya');p.preferences.suppressedMoveTypes.push('insurance');

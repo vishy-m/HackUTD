@@ -16,7 +16,8 @@ vi.mock("../../engines", async () => {
 });
 import { runAgent } from "../loop";
 import { agentTools, executeTool } from "../tools";
-import { getInitialPanel } from "../recommendations";
+import { getInitialPanel, optionImpactLabel } from "../recommendations";
+import { option as engineOption } from "../../server/__tests__/fixtures";
 import { getState, resetPersona } from "../../server/store";
 import { getDashboard } from "../../server/dashboard";
 
@@ -97,13 +98,25 @@ describe("initial recommendation cache", () => {
   });
   it("deduplicates concurrent generation, uses structured output and caches grounded copy", async () => {
     const option = getDashboard("maya").engines.payment.options[0];
-    model.replies.push(textReply(JSON.stringify({ recommendations: [{ optionId: option.id, title: option.title, action: "Review with a specialist", why: "Estimated savings of $1,120.", impactLabel: "$1,120 savings", urgencyLabel: null }] })));
+    model.replies.push(textReply(JSON.stringify({ recommendations: [{ optionId: option.id, title: option.title, action: "Review with a specialist", why: "Estimated savings of $1,120.", impactLabel: `$${option.monthlyCost} savings`, urgencyLabel: null }] })));
     const [first, second] = await Promise.all([getInitialPanel("maya"), getInitialPanel("maya")]);
     expect(first).toEqual(second);
     expect(first.recommendations[0].grounded).toBe(true);
+    expect(first.recommendations[0].impactLabel).toBe(optionImpactLabel(option));
     expect(model.stream).toHaveBeenCalledTimes(1);
     expect(model.stream.mock.calls[0][0].output_config.format.type).toBe("json_schema");
     await getInitialPanel("maya");
     expect(model.stream).toHaveBeenCalledTimes(1);
+  });
+  it("refreshes cached copy when engine fields change without a runtime reset", async () => {
+    model.enabled = false;
+    const before = await getInitialPanel("maya");
+    const previous = engineOption.savingsVsBaseline;
+    try {
+      engineOption.savingsVsBaseline = previous! + 100;
+      const after = await getInitialPanel("maya");
+      expect(after.recommendations[0].impactLabel).toBe(optionImpactLabel(engineOption));
+      expect(after.recommendations[0].impactLabel).not.toBe(before.recommendations[0].impactLabel);
+    } finally { engineOption.savingsVsBaseline = previous; }
   });
 });

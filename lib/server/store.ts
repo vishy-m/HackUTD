@@ -10,6 +10,7 @@ export interface PersonaState {
   acceptedOptionIds: Set<string>;
   suppressedOptionIds: Set<string>;
   panel?: AgentPanelState;
+  panelSource?: string;
   initialPromise?: Promise<AgentPanelState>;
   revision: number;
   drivingSeeded: boolean;

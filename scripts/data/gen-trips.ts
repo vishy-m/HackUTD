@@ -65,6 +65,8 @@ async function main() {
   }
   for (const [personIndex,id] of (['maya','garcia','jordan','raj'] as PersonaId[]).entries()) {
     const random=mulberry32(20261027+personIndex);
+    // Separate telemetry seed keeps mileage and route geometry stable when tuning events.
+    const telemetry=mulberry32(20261027+personIndex+1000);
     const trips: Trip[]=[];
     for (let day=0;day<90;day++) {
       const date=new Date(Date.UTC(2026,6,29+day));
@@ -114,9 +116,29 @@ async function main() {
         const r=await route(p);
         coords=reverse?[...r.coordinates].reverse():r.coordinates;
         trip.miles=Math.round(r.miles*100)/100;
-        if((id==='maya'||id==='garcia')&&i===0) { trip.hardBrakes=1; trip.speedingPct=.08; }
         if(id==='jordan'&&i===0) { trip.hardBrakes=3; trip.fastAccels=1; trip.nightPct=1; trip.speedingPct=.22; }
-        if(id==='raj') { trip.hardBrakes=0;trip.fastAccels=0;trip.harshCorners=0;trip.speedingPct=0;trip.nightPct=0; if(trip.category==='trailhead') trip.harshCorners=1; }
+      }
+      if(id==='maya') {
+        const commute=trip.category==='commute';
+        trip.hardBrakes=commute?2+(telemetry()<.55?1:0):trip.category==='road-trip'?5:0;
+        trip.fastAccels=commute&&telemetry()<.55?1:0;
+        trip.speedingPct=trip.category==='road-trip'?.25+telemetry()*.15:.12+telemetry()*.10;
+        // A recent improvement leaves eight smooth trips after the last rough commute.
+        if(i>=trips.length-8) { trip.hardBrakes=0; trip.fastAccels=0; trip.speedingPct=.04; }
+        // Opening replay: I-35 braking plus a speeding segment, all anchored to the path.
+        if(i===0) { trip.hardBrakes=2; trip.fastAccels=0; trip.speedingPct=.16; }
+      } else if(id==='garcia') {
+        trip.hardBrakes=trip.category==='road-trip'?2:telemetry()<.15?1:0;
+        trip.speedingPct=trip.category==='road-trip'?.18+telemetry()*.07:.04+telemetry()*.04;
+        if(i===0) { trip.hardBrakes=1; trip.speedingPct=.08; }
+      } else if(id==='raj') {
+        trip.hardBrakes=telemetry()<.15?1:0;
+        trip.harshCorners=trip.category==='trailhead'?1:0;
+        trip.speedingPct=.08+telemetry()*.08;
+        // Only the outbound Big Bend showcase is deliberately spotless.
+        if(trip.showcase&&trip.destinationLabel==='Big Bend NP') {
+          trip.hardBrakes=0; trip.harshCorners=0; trip.speedingPct=0; trip.nightPct=0;
+        }
       }
       let seconds=0;
       trip.path=coords.map(([lng,lat],j)=> {
