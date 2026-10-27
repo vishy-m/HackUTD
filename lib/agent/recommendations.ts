@@ -2,8 +2,9 @@ import { z } from "zod";
 import type { AgentPanelState, DashboardData, MoveOption, PersonaId, Recommendation } from "../types";
 import { getDashboard } from "../server/dashboard";
 import { getState, invalidatePanel, panelFromState, runtimeStore } from "../server/store";
-import { getClient, modelConfig } from "./client";
+import { getProvider, providerConfig } from "./llm";
 import { systemPrompt } from "./prompt";
+import { startDiagnostic } from "./diagnostics";
 import { checkGrounding } from "./grounding";
 
 export function topOptions(dashboard: DashboardData): MoveOption[] {
@@ -48,21 +49,17 @@ const copySchema = z.strictObject({ recommendations: z.array(z.strictObject({
 async function draftRecommendations(dashboard: DashboardData): Promise<Recommendation[]> {
   const options = topOptions(dashboard);
   const templates = options.map(templateRecommendation);
-  const client = getClient();
-  if (!client || !options.length) return templates;
+  const diagnostic = startDiagnostic("initial", dashboard.persona.id);
   let correction = "";
   let best = templates;
   try {
+    const provider = getProvider();
+    if (!provider || !options.length) { diagnostic.record.fallback = true; return templates; }
     for (let attempt = 0; attempt < 2; attempt++) {
-      const config = modelConfig();
-      const stream = client.beta.messages.stream({
-        ...config, system: [...systemPrompt(dashboard), ...(correction ? [{ type: "text" as const, text: correction }] : [])],
-        output_config: { ...config.output_config, format: { type: "json_schema", schema: z.toJSONSchema(copySchema) } },
-        messages: [{ role: "user", content: `Draft recommendation copy for exactly these options in this order. Keep why to two sentences and every number verbatim from each option. Include specialist assistance for highStakes options. ${JSON.stringify(options)}` }],
+      const text = await provider.generateJson(z.toJSONSchema(copySchema), {
+        system: [...systemPrompt(dashboard), ...(correction ? [{ type: "text" as const, text: correction }] : [])],
+        prompt: `Draft recommendation copy for exactly these options in this order. Keep why to two sentences and every number verbatim from each option. Include specialist assistance for highStakes options. ${JSON.stringify(options)}`,
       });
-      const response = await stream.finalMessage();
-      if (response.stop_reason !== "end_turn") return templates;
-      const text = response.content.filter(block => block.type === "text").map(block => block.text).join("");
       const parsed = copySchema.parse(JSON.parse(text));
       if (parsed.recommendations.length !== options.length || parsed.recommendations.some((copy, index) => copy.optionId !== options[index].id)) throw new Error("Unexpected recommendation options");
       let failed = false;
@@ -74,18 +71,21 @@ async function draftRecommendations(dashboard: DashboardData): Promise<Recommend
         return { ...templates[index], ...copy, impactLabel, urgencyLabel: copy.urgencyLabel ?? undefined, action: option.highStakes && !/specialist/i.test(copy.action) ? `${copy.action} A TFS specialist can help.` : copy.action, grounded: true };
       });
       if (!failed) return best;
+      if (attempt === 0) diagnostic.record.groundingRetries += 1;
+      else diagnostic.record.fallback = true;
       correction = "Your previous draft contained ungrounded numbers. Regenerate using only exact numeric values in each option. Do not calculate or invent any other amount, percentage, or mileage. If unsure, omit numbers.";
     }
   } catch (error) {
+    diagnostic.record.fallback = true;
     console.warn("[agent/initial] Using engine templates:", error instanceof Error ? error.name : "Unknown error");
-  }
+  } finally { diagnostic.finish(); }
   return best;
 }
 export async function getInitialPanel(id: PersonaId): Promise<AgentPanelState> {
   const state = getState(id);
   const dashboard = getDashboard(id);
   const options = topOptions(dashboard);
-  const source = JSON.stringify({ options, templates: options.map(templateRecommendation) });
+  const source = JSON.stringify({ llm: providerConfig(), options, templates: options.map(templateRecommendation) });
   // The runtime store survives HMR, so engine/data changes must invalidate its copy.
   if (state.panelSource !== source) {
     invalidatePanel(state);
@@ -106,7 +106,8 @@ export async function getInitialPanel(id: PersonaId): Promise<AgentPanelState> {
   try { return await pending; } finally { if (state.initialPromise === pending) state.initialPromise = undefined; }
 }
 export async function warmInitialPanels() {
-  if (runtimeStore.warming) return;
-  runtimeStore.warming = true;
+  const source = JSON.stringify(providerConfig());
+  if (runtimeStore.warmingSource === source) return;
+  runtimeStore.warmingSource = source;
   await Promise.allSettled((["maya", "garcia", "jordan", "raj"] as const).map(getInitialPanel));
 }

@@ -15,9 +15,9 @@ export interface PersonaState {
   revision: number;
   drivingSeeded: boolean;
 }
-interface RuntimeStore { personas: Map<PersonaId, PersonaState>; warming: boolean }
+interface RuntimeStore { personas: Map<PersonaId, PersonaState>; warming: boolean; warmingSource?: string }
 const root = globalThis as typeof globalThis & { __nextMoveRuntime?: RuntimeStore };
-export const runtimeStore = root.__nextMoveRuntime ??= { personas: new Map(), warming: false };
+export const runtimeStore: RuntimeStore = root.__nextMoveRuntime ??= { personas: new Map(), warming: false };
 
 export function getState(id: PersonaId): PersonaState {
   let state = runtimeStore.personas.get(id);

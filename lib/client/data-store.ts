@@ -43,6 +43,8 @@ export interface NextStep {
 
 interface DataState {
   dashboards: Partial<Record<PersonaId, DashboardData>>;
+  /** Most recently loaded dashboard: shown while the next persona loads, so HeroCar stays mounted. */
+  lastDashboard?: DashboardData;
   agent: Partial<Record<PersonaId, AgentPanelState>>;
   dashboardError: string | null;
   chat: Partial<Record<PersonaId, ChatMessage[]>>;
@@ -79,7 +81,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (!force && get().dashboards[id]) return;
     try {
       const d = await getDashboard(id);
-      set((s) => ({ dashboards: { ...s.dashboards, [id]: d }, dashboardError: null }));
+      set((s) => ({ dashboards: { ...s.dashboards, [id]: d }, lastDashboard: d, dashboardError: null }));
     } catch (e) {
       set({ dashboardError: e instanceof Error ? e.message : "Could not load your dashboard" });
     }

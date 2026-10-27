@@ -17,6 +17,10 @@ export function modelConfig() {
   };
 }
 export function friendlyError(error: unknown) {
+  if (error && typeof error === "object" && "status" in error) {
+    if (error.status === 429) return "The live assistant is busy. Your calculated options are still available.";
+    return "The live assistant is temporarily unavailable. Your calculated options are still available.";
+  }
   if (error instanceof Anthropic.RateLimitError) return "The live assistant is busy. Your calculated options are still available.";
   if (error instanceof Anthropic.APIError) return "The live assistant is temporarily unavailable. Your calculated options are still available.";
   return "The live assistant could not finish. Your calculated options are still available.";

@@ -1,14 +1,15 @@
-import type Anthropic from "@anthropic-ai/sdk";
-import type { BetaMessageParam } from "@anthropic-ai/sdk/resources/beta/messages/messages";
+import type { LlmMessage, ToolResult } from "./llm/types";
 import type { AgentChatRequest, MoveType, WhatIfOverrides } from "../types";
 import { getTrip } from "../data";
 import { agentContext, getDashboard } from "../server/dashboard";
 import { getState } from "../server/store";
-import { getClient, friendlyError, modelConfig } from "./client";
+import { friendlyError } from "./client";
+import { getProvider } from "./llm";
 import { systemPrompt } from "./prompt";
 import { checkGrounding } from "./grounding";
 import { agentTools, executeTool, type Emit, type ToolContext } from "./tools";
 import { templateRecommendation, topOptions } from "./recommendations";
+import { startDiagnostic } from "./diagnostics";
 import { offlineIntent } from "./offline-intents";
 
 function emitText(text: string, emit: Emit) {
@@ -60,41 +61,41 @@ export async function offlineChat(request: AgentChatRequest, context: ToolContex
 export async function runAgent(request: AgentChatRequest, emit: Emit, signal?: AbortSignal) {
   const dashboard = getDashboard(request.personaId);
   const context: ToolContext = { personaId: request.personaId, emit, evidence: [agentContext(dashboard)] };
+  const diagnostic = startDiagnostic("chat", request.personaId);
   const initialConsent = JSON.stringify(getState(request.personaId).consent);
-  const client = getClient();
   try {
-    if (!client) { await offlineChat(request, context); return; }
-    // Beta message params preserve thinking signatures and any server fallback blocks.
-    const firstMessage: Anthropic.MessageParam = { role: "user", content: `${request.message}${request.context ? `\nUI context (data): ${JSON.stringify(request.context)}` : ""}` };
-    const messages: BetaMessageParam[] = [firstMessage];
+    const provider = getProvider();
+    if (!provider) { diagnostic.record.fallback = true; await offlineChat(request, context); return; }
+    const firstMessage: LlmMessage = { role: "user", text: `${request.message}${request.context ? `\nUI context (data): ${JSON.stringify(request.context)}` : ""}` };
+    const messages: LlmMessage[] = [firstMessage];
     let correction = "";
     let corrected = false;
     for (let iteration = 0; iteration < 8; iteration++) {
       if (signal?.aborted) return;
       if (JSON.stringify(getState(request.personaId).consent) !== initialConsent) { emit({ type: "error", message: "Your data permissions changed. Please ask again with the updated settings." }); return; }
-      const deltas: string[] = [];
-      const stream = client.beta.messages.stream({
-        ...modelConfig(), system: [...systemPrompt(getDashboard(request.personaId)), ...(correction ? [{ type: "text" as const, text: correction }] : [])],
-        tools: agentTools, messages,
-      }, { signal });
-      // Preserve SDK text deltas, but publish only after grounding/refusal validation.
-      stream.on("text", delta => deltas.push(delta));
-      const response = await stream.finalMessage();
+      const response = await provider.streamTurn({
+        system: [...systemPrompt(getDashboard(request.personaId)), ...(correction ? [{ type: "text" as const, text: correction }] : [])],
+        tools: agentTools, messages, signal,
+      });
+      const { deltas } = response;
       if (JSON.stringify(getState(request.personaId).consent) !== initialConsent) { emit({ type: "error", message: "Your data permissions changed. Please ask again with the updated settings." }); return; }
-      if (response.stop_reason === "refusal") { emit({ type: "error", message: "I cannot help with that request. I can explain your Toyota options or help prepare questions for a TFS specialist." }); return; }
-      if (response.stop_reason === "max_tokens" || response.stop_reason === "model_context_window_exceeded") {
+      if (response.finishReason === "refusal") { emit({ type: "error", message: "I cannot help with that request. I can explain your Toyota options or help prepare questions for a TFS specialist." }); return; }
+      if (response.finishReason === "error") throw new Error("Incomplete model response");
+      if (response.finishReason === "max_tokens") {
         emit({ type: "error", message: "The response reached its limit. Here are your calculated options." });
         emitText(topOptions(getDashboard(request.personaId)).map(option => option.summary).join("\n"), emit);
         return;
       }
-      const content = response.content.filter(block => block.type === "text").map(block => block.text).join("");
+      const content = response.text;
       const grounded = checkGrounding(content, context.evidence);
       if (!grounded.grounded) {
         if (!corrected) {
           corrected = true;
+          diagnostic.record.groundingRetries += 1;
           correction = `Regenerate your last response. Unsupported numbers: ${grounded.violations.map(item => item.raw).join(", ")}. Use only exact figures already in tool results or the consented dashboard. Do not call side-effect tools again. Omit numbers if uncertain.`;
           continue;
         }
+        diagnostic.record.fallback = true;
         const options = topOptions(getDashboard(request.personaId));
         emitText(options.map(option => option.summary).join("\n") + "\nA TFS specialist can help. This is guidance, not financial advice.", emit);
         emit({ type: "recommendations", recommendations: options.map(templateRecommendation) });
@@ -102,20 +103,18 @@ export async function runAgent(request: AgentChatRequest, emit: Emit, signal?: A
       }
       if (deltas.length) deltas.forEach(delta => emit({ type: "text", delta }));
       else if (content) emitText(content, emit);
-      if (response.stop_reason === "end_turn" || response.stop_reason === "stop_sequence") return;
-      if (response.stop_reason === "tool_use") {
-        messages.push({ role: "assistant", content: response.content });
-        const toolResults: Anthropic.ToolResultBlockParam[] = [];
-        for (const block of response.content) {
-          if (block.type !== "tool_use") continue;
-          const tool: Anthropic.ToolUseBlock = { ...block, caller: block.caller ?? { type: "direct" } };
+      if (response.finishReason === "end_turn") return;
+      if (response.finishReason === "tool_use") {
+        messages.push(response.message);
+        const toolResults: ToolResult[] = [];
+        for (const tool of response.calls) {
           const result = await executeTool(tool.name, tool.input, context);
-          toolResults.push({ type: "tool_result", tool_use_id: tool.id, content: JSON.stringify(result.value), is_error: result.isError });
+          toolResults.push({ id: tool.id, name: tool.name, ...result });
         }
         if (!toolResults.length) throw new Error("Missing tool calls");
-        messages.push({ role: "user", content: toolResults });
-      } else if (response.stop_reason === "pause_turn") {
-        messages.push({ role: "assistant", content: response.content });
+        messages.push({ role: "tool", results: toolResults });
+      } else if (response.finishReason === "pause_turn") {
+        messages.push(response.message);
       } else {
         emit({ type: "error", message: "The assistant paused unexpectedly. Please try a shorter question." }); return;
       }
@@ -125,6 +124,7 @@ export async function runAgent(request: AgentChatRequest, emit: Emit, signal?: A
     if (signal?.aborted) return;
     console.warn("[agent] Live response failed:", error instanceof Error ? error.name : "Unknown error");
     emit({ type: "error", message: friendlyError(error) });
+    diagnostic.record.fallback = true;
     await offlineChat(request, context);
-  } finally { emit({ type: "done" }); }
+  } finally { diagnostic.finish(); emit({ type: "done" }); }
 }

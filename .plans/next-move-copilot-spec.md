@@ -149,7 +149,7 @@ High-stakes moves (buyout, refinance, insurance switch) always show both **Do it
 **Engines compute, ranker orders, LLM explains and drafts.** The LLM never produces a dollar figure that isn't in a tool output.
 
 ### 6.2 Model and runtime
-- Claude via the Anthropic SDK with tool use. Default model `claude-sonnet-5-5` for latency; swap through an env var.
+- **Gemini** (`@google/genai`) with function calling, behind a provider abstraction (`lib/agent/llm/`). Default model `gemini-3.5-flash`; `AGENT_PROVIDER` (`gemini` | `anthropic`) and `AGENT_MODEL` override it. The key comes from `GEMINI_API` in `.env`. The Anthropic and OpenAI accounts have no credits (checked Oct 27), so Claude stays as a selectable implementation, not the default. If the LLM fails or is rate-limited, the offline template path plus the intent router keeps every demo step working.
 - Next.js API route `/api/agent` runs the tool-use loop and streams responses to the panel.
 - The system prompt includes: persona summary, preference profile, style settings, consent state, and the rules (cite tool outputs, no invented numbers, offer a human on high-stakes moves, plain language).
 

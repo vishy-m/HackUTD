@@ -10,6 +10,9 @@ import { offlineIntent } from "../offline-intents";
 import { getInitialPanel, templateRecommendation } from "../recommendations";
 
 beforeEach(() => {
+  vi.stubEnv("AGENT_PROVIDER", "gemini");
+  vi.stubEnv("GEMINI_API_KEY", "");
+  vi.stubEnv("GEMINI_API", "");
   vi.stubEnv("ANTHROPIC_API_KEY", "");
   for (const persona of listPersonas()) resetPersona(persona.id);
 });

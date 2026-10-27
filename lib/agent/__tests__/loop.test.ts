@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgentStreamEvent } from "../../types";
 const model = vi.hoisted(() => ({ stream: vi.fn(), enabled: true, replies: [] as { stop_reason: string; content: Record<string, unknown>[] }[] }));
 vi.mock("../client", () => ({
@@ -28,7 +28,9 @@ async function run(message = "Explain my options") {
   await runAgent({ personaId: "maya", message }, event => events.push(event));
   return events;
 }
+afterEach(() => vi.unstubAllEnvs());
 beforeEach(() => {
+  vi.stubEnv("AGENT_PROVIDER", "anthropic");
   resetPersona("maya");
   model.enabled = true;
   model.replies = [];

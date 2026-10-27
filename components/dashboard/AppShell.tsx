@@ -22,7 +22,9 @@ export function AppShell() {
   useReducedMotionSync();
   const personaId = useUiStore((s) => s.personaId);
   const panelOpen = useUiStore((s) => s.agentPanelOpen);
-  const data = useDataStore((s) => s.dashboards[personaId]);
+  // Keep the previous persona on screen until the next one loads: no skeleton flash, and the
+  // 3D car stays mounted so task 04's drive-off / roll-in plays on the vehicle prop change.
+  const data = useDataStore((s) => s.dashboards[personaId] ?? s.lastDashboard);
   const error = useDataStore((s) => s.dashboardError);
   const loadDashboard = useDataStore((s) => s.loadDashboard);
   const loadAgent = useDataStore((s) => s.loadAgent);

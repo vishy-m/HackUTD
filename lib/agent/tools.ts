@@ -1,4 +1,4 @@
-import type Anthropic from "@anthropic-ai/sdk";
+import type { ToolDefinition } from "./llm/types";
 import { z } from "zod";
 import { getTrip } from "../data";
 import { runWhatIf } from "../engines";
@@ -11,7 +11,7 @@ import { checkGrounding } from "./grounding";
 
 export type Emit = (event: AgentStreamEvent) => void;
 export interface ToolContext { personaId: PersonaId; emit: Emit; evidence: unknown[] }
-interface Definition { tool: Anthropic.Tool; execute(input: unknown, context: ToolContext): unknown }
+interface Definition { tool: ToolDefinition; execute(input: unknown, context: ToolContext): unknown }
 const definitions = new Map<string, Definition>();
 function define<T extends z.ZodType>(name: string, description: string, schema: T, execute: (input: z.infer<T>, context: ToolContext) => unknown) {
   const jsonSchema = z.toJSONSchema(schema);

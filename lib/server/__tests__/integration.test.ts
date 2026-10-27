@@ -23,6 +23,9 @@ describe("real engine backend integration", () => {
     }
   });
   it("disables source tools, replay and initial cached copy when consent is revoked", async () => {
+    vi.stubEnv("AGENT_PROVIDER", "gemini");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("GEMINI_API", "");
     vi.stubEnv("ANTHROPIC_API_KEY", "");
     try {
       const initial = await getInitialPanel("maya");
