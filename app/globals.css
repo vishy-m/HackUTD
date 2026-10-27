@@ -1,0 +1,277 @@
+@import "tailwindcss";
+
+/* Next Move Copilot design tokens.
+   Dark "showroom" by default: cool graphite, glass panels, platinum type.
+   Toyota red is reserved for the single recommended move + primary action. */
+
+:root {
+  --bg: #07090d;
+  --bg-2: #0d1117;
+  --stage-light: rgba(150, 170, 200, 0.13);
+  --glass: rgba(20, 25, 33, 0.62);
+  --glass-strong: rgba(19, 23, 30, 0.97);
+  --glass-hi: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.075);
+  --line-2: rgba(255, 255, 255, 0.14);
+  --ink: #eef1f5;
+  --ink-2: #a7afbc;
+  --ink-3: #6f7886;
+  --accent: #eb0a1e;
+  --accent-ink: #ff5360;
+  --accent-soft: rgba(235, 10, 30, 0.14);
+  --good: #5fd3a2;
+  --good-soft: rgba(95, 211, 162, 0.12);
+  --warn: #f2b84b;
+  --warn-soft: rgba(242, 184, 75, 0.13);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px -28px rgba(0, 0, 0, 0.8);
+  --focus: #9cc2ff;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #eceff3;
+  --bg-2: #f6f7f9;
+  --stage-light: rgba(255, 255, 255, 0.9);
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-strong: rgba(250, 251, 252, 0.97);
+  --glass-hi: rgba(255, 255, 255, 0.7);
+  --line: rgba(14, 20, 30, 0.08);
+  --line-2: rgba(14, 20, 30, 0.16);
+  --ink: #0d1117;
+  --ink-2: #4a5361;
+  --ink-3: #7c8594;
+  --accent: #eb0a1e;
+  --accent-ink: #c8081a;
+  --accent-soft: rgba(235, 10, 30, 0.08);
+  --good: #0f8a5f;
+  --good-soft: rgba(15, 138, 95, 0.1);
+  --warn: #a86a00;
+  --warn-soft: rgba(168, 106, 0, 0.1);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 40px -24px rgba(20, 30, 50, 0.28);
+  --focus: #1f5fd1;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eceff3;
+    --bg-2: #f6f7f9;
+    --stage-light: rgba(255, 255, 255, 0.9);
+    --glass: rgba(255, 255, 255, 0.66);
+    --glass-strong: rgba(250, 251, 252, 0.97);
+    --glass-hi: rgba(255, 255, 255, 0.7);
+    --line: rgba(14, 20, 30, 0.08);
+    --line-2: rgba(14, 20, 30, 0.16);
+    --ink: #0d1117;
+    --ink-2: #4a5361;
+    --ink-3: #7c8594;
+    --accent-ink: #c8081a;
+    --accent-soft: rgba(235, 10, 30, 0.08);
+    --good: #0f8a5f;
+    --good-soft: rgba(15, 138, 95, 0.1);
+    --warn: #a86a00;
+    --warn-soft: rgba(168, 106, 0, 0.1);
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 40px -24px rgba(20, 30, 50, 0.28);
+    --focus: #1f5fd1;
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background:
+    radial-gradient(1200px 520px at 38% -120px, var(--stage-light), transparent 70%),
+    linear-gradient(180deg, var(--bg-2), var(--bg) 640px);
+  background-color: var(--bg);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+/* Display face: Saira on its wide axis reads like an instrument cluster. */
+.font-display {
+  font-family: var(--font-saira), var(--font-hanken), sans-serif;
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+}
+.num {
+  font-family: var(--font-saira), var(--font-hanken), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-stretch: 105%;
+}
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.glass-strong {
+  background: var(--glass-strong);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+}
+
+/* The one place red glows: the recommended move. */
+.glow-accent {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent),
+    0 0 0 4px var(--accent-soft),
+    0 20px 50px -24px color-mix(in oklab, var(--accent) 60%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+/* Scrollbars that don't shout */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+
+/* Range input styled as a precise instrument */
+input[type="range"].range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 28px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--ink) 0 var(--fill, 50%), var(--line-2) var(--fill, 50%) 100%);
+}
+input[type="range"].range::-moz-range-track {
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--ink) 0 var(--fill, 50%), var(--line-2) var(--fill, 50%) 100%);
+}
+input[type="range"].range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border-radius: 99px;
+  background: var(--bg-2);
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 150ms;
+}
+input[type="range"].range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  background: var(--bg-2);
+  border: 2px solid var(--ink);
+}
+input[type="range"].range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+input[type="range"].range.agent-moved::-webkit-slider-thumb {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 6px var(--accent-soft);
+}
+
+/* Markdown inside agent messages */
+.md p + p,
+.md p + ul,
+.md ul + p {
+  margin-top: 0.5rem;
+}
+.md ul,
+.md ol {
+  padding-left: 1.1rem;
+}
+.md ul {
+  list-style: disc;
+}
+.md ol {
+  list-style: decimal;
+}
+.md li + li {
+  margin-top: 0.2rem;
+}
+.md strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+.md table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+.md th,
+.md td {
+  text-align: left;
+  padding: 0.35rem 0.5rem 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.md th {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--line) 0%, var(--line-2) 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
