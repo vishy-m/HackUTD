@@ -45,6 +45,13 @@ function AgentMessage({ m }: { m: ChatMessage }) {
               {t.status === "start" ? "…" : ""}
             </li>
           ))}
+          {/* Text is held server-side until grounding passes, so fill the quiet gap after tools finish. */}
+          {m.streaming && !m.text && m.tools.every((t) => t.status === "done") && (
+            <li className="flex items-center gap-2 text-xs text-ink-3">
+              <Loader2 size={12} className="animate-spin" />
+              Checking the numbers…
+            </li>
+          )}
         </ul>
       )}
       {m.text ? (
