@@ -7,6 +7,7 @@ import { AcceptModal } from "@/components/agent/AcceptModal";
 import { useDataStore } from "@/lib/client/data-store";
 import { useReducedMotionSync } from "@/lib/client/hooks";
 import { useUiStore } from "@/lib/client/ui-store";
+import { RepairAdvisor } from "@/components/repair/RepairAdvisor";
 import { ConsentSheet } from "./ConsentSheet";
 import { ContractCard } from "./ContractCard";
 import { DrivingLife } from "./DrivingLife";
@@ -18,7 +19,7 @@ import { MoveTiles } from "./MoveTiles";
 import { RideReplaySlot } from "./RideReplaySlot";
 import { TopBar } from "./TopBar";
 
-export type DashboardPage = "overview" | "moves" | "finances" | "driving";
+export type DashboardPage = "overview" | "moves" | "finances" | "driving" | "repair";
 
 const pageCopy: Record<Exclude<DashboardPage, "overview">, { eyebrow: string; title: string; description: string }> = {
   moves: {
@@ -35,6 +36,11 @@ const pageCopy: Record<Exclude<DashboardPage, "overview">, { eyebrow: string; ti
     eyebrow: "On the road",
     title: "Driving insights",
     description: "Understand how your mileage and driving patterns can shape costs, coverage, and future options.",
+  },
+  repair: {
+    eyebrow: "Vehicle decision",
+    title: "Repair or replace?",
+    description: "Compare the paths using your vehicle, repair, and budget.",
   },
 };
 
@@ -107,6 +113,7 @@ export function AppShell({ page = "overview" }: { page?: DashboardPage }) {
               <DrivingLife data={data} />
             </>
           )}
+          {page === "repair" && <RepairAdvisor key={data?.persona.id ?? "loading"} data={data} />}
           <Footer />
         </main>
         <AgentPanel data={data} />

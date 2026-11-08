@@ -160,12 +160,13 @@ export function TopBar({ data }: { data?: DashboardData }) {
   const navItems = [
     { href: "/", label: "Overview" },
     { href: "/moves", label: "Moves" },
+    { href: "/repair", label: "Repair help" },
     { href: "/finances", label: "Finances" },
     { href: "/driving", label: "Driving" },
   ];
 
   const primaryNav = (mobile = false) => (
-    <nav aria-label="Dashboard" className={clsx(mobile ? "flex w-full gap-1 overflow-x-auto px-3 py-2 sm:px-6" : "hidden items-center gap-1 lg:flex")}>
+    <nav aria-label="Dashboard" className={clsx(mobile ? "flex w-full gap-1 overflow-x-auto px-3 py-2 sm:px-6" : "hidden items-center gap-1 xl:flex")}>
       {navItems.map((item) => {
         const active = pathname === item.href;
         return (
@@ -230,7 +231,7 @@ export function TopBar({ data }: { data?: DashboardData }) {
           </span>
         </div>
       </div>
-      <div className="border-t border-line lg:hidden">{primaryNav(true)}</div>
+      <div className="border-t border-line xl:hidden">{primaryNav(true)}</div>
     </header>
   );
 }

@@ -262,7 +262,7 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
 
   if (!open) {
     return (
-      <aside className="sticky top-[88px] h-fit">
+      <aside className="sticky top-[132px] h-fit xl:top-[88px]">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -279,7 +279,7 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
   }
 
   return (
-    <aside aria-label="Copilot" className="glass sticky top-[88px] flex h-[calc(100dvh-104px)] min-h-[520px] flex-col overflow-hidden rounded-[26px]">
+    <aside aria-label="Copilot" className="glass sticky top-[132px] flex h-[calc(100dvh-148px)] min-h-[520px] flex-col overflow-hidden rounded-[26px] xl:top-[88px] xl:h-[calc(100dvh-104px)]">
       <div className="border-b border-line px-5 py-4">
         <PanelHeader data={data} onClose={() => setOpen(false)} />
       </div>
