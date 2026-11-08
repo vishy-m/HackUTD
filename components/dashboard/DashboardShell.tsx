@@ -4,6 +4,7 @@
 // stage (and the car on it) persists while the pages change around it.
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, type ReactNode } from "react";
 import { AcceptModal } from "@/components/agent/AcceptModal";
 import { AgentPanel } from "@/components/agent/AgentPanel";
@@ -35,6 +36,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const personaId = useUiStore((s) => s.personaId);
   const activeHotspot = useUiStore((s) => s.activeHotspot);
   const { data, error } = useDashboard();
+  // The car belongs to the landing page. Elsewhere the stage fades out and stops rendering.
+  const onLanding = usePathname() === "/";
   const loadDashboard = useDashboardLoaders();
 
   useEffect(() => {
@@ -47,7 +50,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative flex min-h-dvh flex-col">
-      <CarStage vehicle={data?.persona.vehicle} />
+      <CarStage vehicle={data?.persona.vehicle} active={onLanding} />
       <TopBar data={data} />
       <main id="main" className="relative z-[2] flex-1">
         {error && !data ? (

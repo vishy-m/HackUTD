@@ -8,14 +8,14 @@
   "vehicle": {
     "year": 2024,
     "make": "Toyota",
-    "model": "Corolla LE",
+    "model": "GR Supra 2.0",
     "bodyStyle": "sedan",
-    "modelAsset": "/models/corolla.glb",
+    "modelAsset": "/models/gr-supra.glb",
     "paintHex": "#8FA9B8",
     "odometer": 18700,
     "vin": "SYNTHETIC-JORDAN-001",
     "isHybrid": false,
-    "mpg": 35
+    "mpg": 29
   },
   "contract": {
     "kind": "loan",

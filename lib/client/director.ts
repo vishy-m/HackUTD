@@ -71,12 +71,14 @@ function shot(p: Partial<Pose> & Pick<Pose, "eye" | "target">): Pose {
 }
 
 function SHOT_HERO(): Pose {
-  return shot({ eye: [7.3, 2.4, 8.4], target: [0, 0.62, 0], fov: 29, offset: [0.2, -0.02], mobileOffset: [0, 0.2], spin: 0.09 });
+  return shot({ eye: [7.3, 2.4, 8.4], target: [0, 0.62, 0], fov: 29, offset: [0.2, -0.02], mobileOffset: [0, 0.2], spin: 0.06 });
 }
 
 export const SHOTS = {
   /** Overview opener: three-quarter front, turntable, car on the right. */
   hero: SHOT_HERO(),
+  /** Summary mode: the same framing, standing still at a three-quarter angle. */
+  heroStill: shot({ eye: [7.3, 2.4, 8.4], target: [0, 0.62, 0], fov: 29, offset: [0.2, -0.02], mobileOffset: [0, 0.2], yaw: 0.2 }),
   /** Overview opener as it scrolls away: camera lifts, car centred and smaller. */
   heroLift: shot({ eye: [5.8, 5.6, 10.6], target: [0, 0.4, 0], fov: 30, offset: [0.12, 0.06], mobileOffset: [0, 0.22], yaw: 0.6 }),
   /** Driver side, wide, before diving to the odometer. Car on the left. */

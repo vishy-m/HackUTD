@@ -4,6 +4,7 @@
 // idle auto-rotate, hotspots that fly the camera, persona drive-off/roll-in transition and an
 // upgrade preview that slides a second model in beside the current one.
 import "./hero.css";
+import { useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import { CameraControls, ContactShadows, Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
@@ -80,6 +81,8 @@ function hasWebGL() {
 // ---------------- main component ----------------
 export default function HeroCar({ vehicle, upgradePreview, className, hotspotLabels, onHotspotSelect }: HeroCarProps) {
   const reducedMotion = useUiStore((s) => s.reducedMotion);
+  const reduceDomMotion = useShouldReduceMotion();
+  const [pageVisible, setPageVisible] = useState(true);
   const activeHotspot = useUiStore((s) => s.activeHotspot);
   // Pause the hero render loop while the 3D replay is open (one heavy WebGL view at a time).
   const replayOpen = useUiStore((s) => s.replay !== null);
@@ -99,6 +102,13 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
     const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { rootMargin: "100px" });
     io.observe(el);
     return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onVisibility = () => setPageVisible(!document.hidden);
+    document.addEventListener("visibilitychange", onVisibility);
+    onVisibility();
+    return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
   const labels = useMemo(() => {
@@ -129,10 +139,11 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
   return (
     <div
       ref={rootRef}
+      data-motion-paused={!visible || !pageVisible || replayOpen || !dotsReady}
       tabIndex={0}
       onKeyDown={onKey}
       aria-label={`3D view of your ${vehicle.year} Toyota ${vehicle.model}. Drag to orbit, keys 1 to 4 focus hotspots, R resets the view.`}
-      className={`nm-hero relative isolate h-full min-h-[320px] w-full overflow-hidden rounded-lg bg-[radial-gradient(120%_90%_at_50%_10%,#1d2230_0%,#0b0d13_55%,#05060a_100%)] text-white outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${reducedMotion ? "nm-reduced" : ""} ${className ?? ""}`}
+      className={`nm-hero relative isolate h-full min-h-[320px] w-full overflow-hidden rounded-lg bg-[radial-gradient(120%_90%_at_50%_10%,#1d2230_0%,#0b0d13_55%,#05060a_100%)] text-white outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${reduceDomMotion ? "nm-reduced" : ""} ${className ?? ""}`}
     >
       {webgl === false ? (
         fallback
@@ -171,7 +182,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(130%_100%_at_50%_35%,transparent_45%,rgba(0,0,0,0.55)_100%)]" />
       {/* Hotspot dots (projected from 3D anchors every frame) */}
       {webgl && (
-        <div className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ${dotsReady ? "opacity-100" : "opacity-0"}`} aria-hidden={!dotsReady}>
+        <div className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ease-ui-out ${dotsReady ? "opacity-100" : "opacity-0"}`} aria-hidden={!dotsReady} inert={!dotsReady}>
           {HOTSPOTS.map((h) => {
             const active = activeHotspot === h.id;
             return (
@@ -216,7 +227,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
             select(null);
             setResetTick((t) => t + 1);
           }}
-          className="pointer-events-auto h-9 rounded-full border border-white/15 bg-black/35 px-3 text-xs font-medium text-white/85 backdrop-blur-md transition hover:bg-white/10"
+          className="pointer-events-auto h-9 rounded-full border border-white/15 bg-black/35 px-3 text-xs font-medium text-white/85 backdrop-blur-md transition-[background-color] duration-200 ease-ui-color hover:bg-white/10"
           title="Reset view (R)"
         >
           Reset view
@@ -231,7 +242,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
                 type="button"
                 aria-pressed={activeHotspot === h.id}
                 onClick={() => select(activeHotspot === h.id ? null : h.id)}
-                className={`flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium backdrop-blur-md transition ${activeHotspot === h.id ? "border-white/70 bg-white text-black" : "border-white/12 bg-black/35 text-white/80 hover:bg-white/10"}`}
+                className={`flex h-8 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium backdrop-blur-md transition-[color,background-color,border-color] duration-200 ease-ui-color ${activeHotspot === h.id ? "border-white/70 bg-white text-black" : "border-white/12 bg-black/35 text-white/80 hover:bg-white/10"}`}
                 title={`${h.title} → ${h.move} (${i + 1})`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${activeHotspot === h.id ? "bg-[#EB0A1E]" : "bg-white/80"}`} />
@@ -509,6 +520,7 @@ function Stage({ vehicle, shown, setShown, upgradePreview, activeHotspot, reduce
           length={model.isHero ? model.length : model.length * 0.92}
           paintMaterial={model.paintMaterial}
           paintHex={shown.paintHex}
+          keepMaterials={model.isHero}
           wheelSpin={wheelSpin}
           onAnchors={onAnchors}
         />
@@ -523,6 +535,7 @@ function Stage({ vehicle, shown, setShown, upgradePreview, activeHotspot, reduce
             length={previewShown.isHero ? previewShown.length : previewShown.length * 0.92}
             paintMaterial={previewShown.paintMaterial}
             paintHex={PREVIEW_PAINT}
+            keepMaterials={previewShown.isHero}
             wheelSpin={previewSpin}
           />
         </group>

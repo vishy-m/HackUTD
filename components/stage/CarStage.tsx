@@ -7,7 +7,7 @@
 //
 // Mount with next/dynamic({ ssr: false }).
 
-import { ContactShadows, Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import * as THREE from "three";
@@ -23,8 +23,8 @@ const PREVIEW_OFFSET = 1.45;
 const PREVIEW_PAINT = "#D8DCE1";
 
 const PALETTE = {
-  light: { bg: "#f4f4f2", floor: "#f1f1ee", exposure: 1.0, reflect: 0.28, shadow: 0.38, floorEnv: 1, fogNear: 3, fogFar: 22 },
-  dark: { bg: "#0c0d0f", floor: "#0b0c0e", exposure: 1.15, reflect: 1.0, shadow: 0.85, floorEnv: 0.06, fogNear: 1.5, fogFar: 9 },
+  light: { exposure: 1.0, shadow: 0.45, catcher: 0.12 },
+  dark: { exposure: 1.15, shadow: 0.7, catcher: 0.3 },
 };
 
 // Pointer position, -1..1, written by a window listener (the canvas itself ignores the pointer).
@@ -52,7 +52,7 @@ function hasWebGL() {
   }
 }
 
-export default function CarStage({ vehicle }: { vehicle?: Vehicle }) {
+export default function CarStage({ vehicle, active = true }: { vehicle?: Vehicle; active?: boolean }) {
   const [theme] = useTheme();
   const replayOpen = useUiStore((s) => s.replay !== null);
   const [webgl] = useState<boolean | null>(() => (typeof window === "undefined" ? null : hasWebGL()));
@@ -88,7 +88,11 @@ export default function CarStage({ vehicle }: { vehicle?: Vehicle }) {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0" style={{ background: pal.bg }} aria-hidden>
+      <div
+        className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-[400ms] ease-ui-soft"
+        style={{ background: "var(--bg)", opacity: active ? 1 : 0, visibility: active ? "visible" : "hidden", transitionProperty: "opacity, visibility" }}
+        aria-hidden
+      >
         {webgl === false ? (
           fallback
         ) : webgl === null ? null : (
@@ -96,11 +100,13 @@ export default function CarStage({ vehicle }: { vehicle?: Vehicle }) {
             <Canvas
               shadows={{ type: THREE.PCFShadowMap }}
               dpr={[1, 1.75]}
-              frameloop={replayOpen || hidden ? "never" : "always"}
+              frameloop={replayOpen || hidden || !active ? "never" : "always"}
               camera={{ position: [6.6, 2.1, 7.6], fov: 29, near: 0.1, far: 120 }}
-              gl={{ antialias: true, powerPreference: "high-performance" }}
+              gl={{ antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: "high-performance" }}
               onCreated={({ gl }) => {
-                gl.toneMapping = THREE.ACESFilmicToneMapping;
+                gl.setClearColor(0x000000, 0);
+                // Khronos PBR Neutral: base colors come out as authored (ACES shifted hues and desaturated paint).
+                gl.toneMapping = THREE.NeutralToneMapping;
               }}
             >
               <Suspense fallback={null}>
@@ -111,7 +117,7 @@ export default function CarStage({ vehicle }: { vehicle?: Vehicle }) {
         )}
       </div>
       {/* Callout pinned to the active hotspot; positioned every frame by the scene. */}
-      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden>
+      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" style={{ display: active ? undefined : "none" }} aria-hidden>
         <div ref={calloutRef} className="nm-callout absolute top-0 left-0 opacity-0" style={{ transform: "translate(-999px,-999px)" }}>
           <span className="nm-callout-dot" />
           <span className="nm-callout-line" />
@@ -284,13 +290,6 @@ function Scene({ vehicle, pal, calloutRef }: { vehicle: Vehicle; pal: (typeof PA
     if (fit > 1) cam.position.lerp(tmp.target, 1 - fit);
     cam.setViewOffset(w, h, -ox * w, oy * h, w, h);
     cam.updateProjectionMatrix();
-    // Fog starts just behind the car, so the floor melts into the page at any camera distance.
-    const fog = state.scene.fog as THREE.Fog | null;
-    if (fog) {
-      const d = cam.position.distanceTo(tmp.target);
-      fog.near = d + pal.fogNear;
-      fog.far = d + pal.fogFar;
-    }
 
     // Callout: project the hotspot anchor into the DOM overlay.
     const el = calloutRef.current;
@@ -315,16 +314,16 @@ function Scene({ vehicle, pal, calloutRef }: { vehicle: Vehicle; pal: (typeof PA
 
   return (
     <>
+      {/* A neutral white studio: a softbox overhead, two side strips, a low fill. No colored lights,
+          so paint, chrome and glass show the colors their authors gave them. */}
       <Environment resolution={256} frames={1}>
-        <Lightformer form="rect" intensity={5} color="#ffffff" position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 5, 1]} />
-        <Lightformer form="rect" intensity={2.6} color="#e4ebff" position={[-6, 2, 2]} rotation={[0, Math.PI / 2, 0]} scale={[10, 2.5, 1]} />
-        <Lightformer form="rect" intensity={2.6} color="#fff2e6" position={[6, 2, -2]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 2.5, 1]} />
-        <Lightformer form="ring" intensity={1.6} color="#EB0A1E" position={[0, 3, -8]} scale={3} />
+        <Lightformer form="rect" intensity={4} color="#ffffff" position={[0, 6, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 5, 1]} />
+        <Lightformer form="rect" intensity={2} color="#ffffff" position={[-6, 2, 2]} rotation={[0, Math.PI / 2, 0]} scale={[10, 2.5, 1]} />
+        <Lightformer form="rect" intensity={2} color="#ffffff" position={[6, 2, -2]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 2.5, 1]} />
         <Lightformer form="rect" intensity={0.8} color="#ffffff" position={[0, 1, 8]} scale={[10, 1, 1]} />
       </Environment>
-      <ambientLight intensity={0.2} />
-      <directionalLight position={[4, 8, 5]} intensity={2.2} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0004} />
-      <spotLight position={[-5, 6, -4]} angle={0.5} penumbra={1} intensity={24} color="#a9bfff" />
+      <ambientLight intensity={0.25} />
+      <directionalLight position={[4, 8, 5]} intensity={2} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0004} />
 
       <group ref={carGroup}>
         <CarModel
@@ -334,6 +333,7 @@ function Scene({ vehicle, pal, calloutRef }: { vehicle: Vehicle; pal: (typeof PA
           length={model.isHero ? model.length : model.length * 0.92}
           paintMaterial={model.paintMaterial}
           paintHex={shown.paintHex}
+          keepMaterials={model.isHero}
           wheelSpin={wheelSpin}
           onAnchors={onAnchors}
         />
@@ -348,32 +348,17 @@ function Scene({ vehicle, pal, calloutRef }: { vehicle: Vehicle; pal: (typeof PA
             length={previewShown.isHero ? previewShown.length : previewShown.length * 0.92}
             paintMaterial={previewShown.paintMaterial}
             paintHex={PREVIEW_PAINT}
+            keepMaterials={previewShown.isHero}
             wheelSpin={previewSpin}
           />
         </group>
       )}
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.001, 0]} receiveShadow>
-        <circleGeometry args={[60, 64]} />
-        <MeshReflectorMaterial
-          resolution={512}
-          blur={[400, 120]}
-          mixBlur={1}
-          mixStrength={pal.reflect}
-          mixContrast={1}
-          roughness={0.9}
-          depthScale={1}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.2}
-          color={pal.floor}
-          envMapIntensity={pal.floorEnv}
-          metalness={0.5}
-          mirror={0}
-        />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[40, 40]} />
+        <shadowMaterial transparent opacity={pal.catcher} />
       </mesh>
-      <ContactShadows position={[0, 0.002, 0]} opacity={pal.shadow} scale={18} blur={2.2} far={3} resolution={512} color="#000000" frames={Infinity} />
-      <color attach="background" args={[pal.bg]} />
-      <fog attach="fog" args={[pal.bg, 22, 52]} />
+      <ContactShadows position={[0, 0.002, 0]} opacity={pal.shadow} scale={14} blur={2.4} far={2.6} resolution={512} color="#000000" frames={Infinity} />
     </>
   );
 }

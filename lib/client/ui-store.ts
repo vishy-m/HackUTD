@@ -21,7 +21,10 @@ interface UiState {
   agentPanelOpen: boolean;
   agentContext: { widget?: string; optionId?: string; tripId?: string } | null;
   reducedMotion: boolean;
+  /** Landing page: the guided scroll tour, or a plain summary. Remembered per browser. */
+  overviewMode: "tour" | "summary";
 
+  setOverviewMode: (m: "tour" | "summary") => void;
   setPersona: (id: PersonaId) => void;
   setHotspot: (h: Hotspot | null) => void;
   openReplay: (r: ReplayState | null) => void;
@@ -42,7 +45,16 @@ export const useUiStore = create<UiState>((set) => ({
   agentPanelOpen: false, // the copilot opens over the stage on demand
   agentContext: null,
   reducedMotion: false,
+  overviewMode: "tour",
 
+  setOverviewMode: (overviewMode) => {
+    try {
+      localStorage.setItem("nm-overview", overviewMode);
+    } catch {
+      /* private mode */
+    }
+    set({ overviewMode });
+  },
   setPersona: (personaId) =>
     set({ personaId, activeHotspot: null, replay: null, openMove: null, whatIf: {}, agentContext: null }),
   setHotspot: (activeHotspot) => set({ activeHotspot }),

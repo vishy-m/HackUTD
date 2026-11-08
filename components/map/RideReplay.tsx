@@ -5,6 +5,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./replay.css";
+import { useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Trip, TripEvent } from "@/lib/types";
 import { useUiStore } from "@/lib/client/ui-store";
@@ -67,7 +68,7 @@ type Status = "loading" | "ready" | "error" | "nowebgl";
 export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A1E", autoPlay = true, provider: providerProp }: RideReplayProps) {
   const tl = useMemo(() => buildTimeline(trip), [trip]);
   const speeds = useMemo(() => speedOptions(tl.duration), [tl.duration]);
-  const reducedMotion = useUiStore((s) => s.reducedMotion);
+  const reducedMotion = useShouldReduceMotion();
   const openReplay = useUiStore((s) => s.openReplay);
 
   const [status, setStatus] = useState<Status>("loading");
@@ -315,7 +316,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       last = now;
       const s = st.current;
       const m = mapRef.current;
-      if (!m || !s.visible || s.intro) return;
+      if (!m || !s.visible || document.hidden || s.intro) return;
       if (!s.playing && now > s.wakeUntil && s.car) return;
 
       // Advance time; slow down around events.
@@ -393,8 +394,8 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
         hudScore.current.dataset.neg = sc < 0 ? "1" : "0";
       }
       const pct = (s.t / tl.duration) * 100;
-      if (hudFill.current) hudFill.current.style.width = `${pct}%`;
-      if (hudThumb.current) hudThumb.current.style.left = `${pct}%`;
+      if (hudFill.current) hudFill.current.style.transform = `translateX(-${100 - pct}%)`;
+      if (hudThumb.current) hudThumb.current.style.transform = `translateX(${pct}%)`;
       if (hudRange.current && !s.scrubbing) {
         hudRange.current.value = String(Math.round(s.t));
         hudRange.current.setAttribute("aria-valuetext", `${formatElapsed(s.t)} of ${formatElapsed(tl.duration)}`);
@@ -459,7 +460,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       </div>
       {fallback && (
         <div className="absolute inset-0">
-          <RouteFallback trip={trip} reason={status === "nowebgl" ? "3D view needs WebGL · showing the 2D route" : `3D map unavailable (${errorMsg.slice(0, 60)}) · showing the 2D route`} />
+          <RouteFallback trip={trip} reason={status === "nowebgl" ? "3D view needs WebGL, showing the 2D route" : `3D map unavailable (${errorMsg.slice(0, 60)}), showing the 2D route`} />
         </div>
       )}
 
@@ -475,18 +476,18 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       {/* Header */}
       <header className="absolute inset-x-0 top-0 z-[5] flex items-start justify-between gap-3 p-3 sm:p-4">
         <div className="min-w-0 rounded-lg border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
-          <p className="text-[11px] font-medium text-white/55">Ride replay · {trip.category.replace("-", " ")}</p>
+          <p className="text-[11px] font-medium text-white/55">Ride replay, {trip.category.replace("-", " ")}</p>
           <h2 className="truncate text-sm font-semibold sm:text-base">{trip.destinationLabel}</h2>
           <p className="text-xs text-white/60">
-            {date} · {trip.miles.toFixed(1)} mi · score <span className="font-semibold text-white">{trip.score}</span>
-            <span className="ml-2 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-white/70">{light}</span>
+            {date}, {trip.miles.toFixed(1)} mi, score <span className="font-semibold text-white">{trip.score}</span>
+            <span className="ml-2 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] text-white/70">{light.charAt(0).toUpperCase() + light.slice(1)}</span>
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button type="button" onClick={() => setLegendOpen((v) => !v)} aria-expanded={legendOpen} className="hidden h-10 rounded-full border border-white/10 bg-black/40 px-3 text-xs font-medium text-white/80 backdrop-blur-md transition hover:bg-white/15 sm:block">
+          <button type="button" onClick={() => setLegendOpen((v) => !v)} aria-expanded={legendOpen} className="hidden h-10 rounded-full border border-white/10 bg-black/40 px-3 text-xs font-medium text-white/80 backdrop-blur-md transition-[background-color] duration-200 ease-ui-color hover:bg-white/15 sm:block">
             Legend
           </button>
-          <button type="button" onClick={close} aria-label="Close replay (Esc)" className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/40 text-lg backdrop-blur-md transition hover:bg-white/15">
+          <button type="button" onClick={close} aria-label="Close replay (Esc)" className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/40 text-lg backdrop-blur-md transition-[background-color] duration-200 ease-ui-color hover:bg-white/15">
             <span aria-hidden>×</span>
           </button>
         </div>
@@ -504,13 +505,13 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
               <li key={k} className="flex items-center gap-2"><span className="ml-1.5 h-2.5 w-2.5 rounded-full ring-2 ring-white/80" style={{ background: EVENT_STYLE[k].color }} /><span className="ml-1">{EVENT_STYLE[k].label}</span></li>
             ))}
           </ul>
-          <p className="mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-white/45">Space play · ←/→ scrub · C camera · R reset · Esc close</p>
+          <p className="mt-2 border-t border-white/10 pt-2 text-[10px] leading-relaxed text-white/45">Space play, ←/→ scrub, C camera, R reset, Esc close</p>
         </aside>
       )}
 
       {/* Event callout */}
       {callout && (
-        <div role="status" aria-live="polite" className="nm-callout absolute left-1/2 top-[86px] z-[6] flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-black/60 px-4 py-2 text-sm font-medium shadow-2xl backdrop-blur-md" style={{ boxShadow: `0 0 0 1px ${callout.color}55, 0 10px 40px ${callout.color}40` }}>
+        <div role="status" aria-live="polite" key={callout.idx} className="nm-replay-callout absolute left-1/2 top-[86px] z-[6] flex items-center gap-2 whitespace-nowrap rounded-full border border-white/15 bg-black/60 px-4 py-2 text-sm font-medium shadow-2xl backdrop-blur-md" style={{ boxShadow: `0 0 0 1px ${callout.color}55, 0 10px 40px ${callout.color}40` }}>
           <span className="h-2.5 w-2.5 rounded-full" style={{ background: callout.color, boxShadow: `0 0 10px ${callout.color}` }} />
           {callout.text}
         </div>
@@ -533,19 +534,21 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
           {/* Scrubber */}
           <div className="relative mx-1 mb-2.5 h-6">
             <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-white/12 bg-white/10" />
-            <div ref={hudFill} className="absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full" style={{ width: "0%", background: `linear-gradient(90deg, ${ROUTE_COLORS.normal}, #9BE8FF)`, boxShadow: `0 0 12px ${ROUTE_COLORS.normal}88` }} />
+            <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full">
+              <div ref={hudFill} className="h-full w-full rounded-full" style={{ transform: "translateX(-100%)", background: `linear-gradient(90deg, ${ROUTE_COLORS.normal}, #9BE8FF)`, boxShadow: `0 0 12px ${ROUTE_COLORS.normal}88` }} />
+            </div>
             {ticks.map((e, i) => (
               <button
                 key={i}
                 type="button"
                 tabIndex={-1}
-                title={`${EVENT_STYLE[e.type].label} · ${formatElapsed(e.t)}`}
+                title={`${EVENT_STYLE[e.type].label}, ${formatElapsed(e.t)}`}
                 aria-hidden
                 onClick={() => {
                   seek(Math.max(0, e.t - 3));
                   showCallout(e, tl.events.indexOf(e));
                 }}
-                className="absolute top-1/2 z-[2] h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-black/60 transition hover:scale-125"
+                className="absolute top-1/2 z-[2] h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-black/60 transition-shadow duration-200 ease-ui-color hover:ring-white/90"
                 style={{ left: `${(e.t / tl.duration) * 100}%`, background: EVENT_STYLE[e.type].color }}
               />
             ))}
@@ -562,11 +565,13 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
               onPointerUp={() => { st.current.scrubbing = false; }}
               onInput={(e) => seek(Number((e.target as HTMLInputElement).value))}
             />
-            <div ref={hudThumb} className="nm-thumb pointer-events-none absolute top-1/2 z-[3] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_4px_rgba(79,209,255,0.35),0_2px_8px_rgba(0,0,0,0.6)]" style={{ left: "0%" }} />
+            <div ref={hudThumb} className="nm-thumb pointer-events-none absolute inset-x-0 top-1/2 z-[3]" style={{ transform: "translateX(0%)" }}>
+              <span className="block h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_0_4px_rgba(79,209,255,0.35),0_2px_8px_rgba(0,0,0,0.6)]" />
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => play(!playing)} aria-label={playing ? "Pause (Space)" : "Play (Space)"} className="grid h-11 w-11 place-items-center rounded-full bg-white text-black shadow-lg transition hover:scale-105 active:scale-95">
+            <button type="button" onClick={() => play(!playing)} aria-label={playing ? "Pause (Space)" : "Play (Space)"} className="grid h-11 w-11 place-items-center rounded-full bg-white text-black shadow-lg transition-[scale,background-color] duration-[400ms,200ms] ease-[var(--ease-press),var(--ease-ui-color)] hover:bg-white/85 active:scale-[0.97] motion-reduce:active:scale-100">
               {playing ? (
                 <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><rect x="3" y="2" width="3.5" height="12" rx="1" fill="currentColor" /><rect x="9.5" y="2" width="3.5" height="12" rx="1" fill="currentColor" /></svg>
               ) : (
@@ -577,7 +582,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
             <Segmented label="Playback speed" value={speed} options={speeds.options.map((v) => ({ id: v, label: `${v}×` }))} onChange={(v) => changeSpeed(v as Speed)} />
             <Segmented label="Camera" value={mode} options={MODES.map((m) => ({ id: m.id, label: m.label, title: m.hint }))} onChange={(v) => changeMode(v as CameraMode)} />
 
-            <button type="button" onClick={resetView} className="ml-auto h-9 rounded-full border border-white/15 px-3 text-xs font-medium text-white/85 transition hover:bg-white/10" title="Reset camera (R)">
+            <button type="button" onClick={resetView} className="ml-auto h-9 rounded-full border border-white/15 px-3 text-xs font-medium text-white/85 transition-[background-color] duration-200 ease-ui-color hover:bg-white/10" title="Reset camera (R)">
               Reset view
             </button>
           </div>
@@ -608,7 +613,7 @@ function Segmented<T extends string | number>({ label, value, options, onChange 
           aria-checked={o.id === value}
           title={o.title}
           onClick={() => onChange(o.id)}
-          className={`h-8 rounded-full px-3 text-xs font-medium transition ${o.id === value ? "bg-white text-black shadow" : "text-white/70 hover:text-white"}`}
+          className={`h-8 rounded-full px-3 text-xs font-medium transition-[color,background-color,box-shadow] duration-200 ease-ui-color ${o.id === value ? "bg-white text-black shadow" : "text-white/70 hover:text-white"}`}
         >
           {o.label}
         </button>

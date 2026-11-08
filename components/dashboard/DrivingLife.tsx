@@ -1,5 +1,6 @@
 "use client";
 
+import { spring, transition as motionTransition, useShouldReduceMotion, useTempoTransition } from "@animate-ui/react/utils/motion";
 import clsx from "clsx";
 import { Flame, Play } from "lucide-react";
 import { motion } from "motion/react";
@@ -26,6 +27,8 @@ function scoreTone(s: number) {
 
 /** 240° gauge, Drive Pulse-style. */
 function ScoreGauge({ score }: { score: number }) {
+  const reduced = useShouldReduceMotion();
+  const number = useTempoTransition(spring.number);
   const size = 168;
   const stroke = 10;
   const r = (size - stroke) / 2;
@@ -47,7 +50,7 @@ function ScoreGauge({ score }: { score: number }) {
           strokeDasharray={`${arc} ${circ}`}
           initial={false}
           animate={{ strokeDashoffset: arc * (1 - score / 100) }}
-          transition={{ type: "spring", stiffness: 60, damping: 18 }}
+          transition={reduced ? motionTransition.instant : number}
         />
       </svg>
       <div className="absolute inset-x-0 top-[34%] text-center">
@@ -99,14 +102,14 @@ function TripList({ trips }: { trips: TripRow[] }) {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-ink">{t.destinationLabel}</div>
                 <div className="truncate text-xs text-ink-3">
-                  {categoryLabel[t.category]} · {shortDate(t.start)}, {timeOfDay(t.start)} · <span className="num">{t.miles.toLocaleString()}</span> mi
-                  {t.hardBrakes > 0 && ` · ${t.hardBrakes} hard ${t.hardBrakes === 1 ? "brake" : "brakes"}`}
+                  {categoryLabel[t.category]}, {shortDate(t.start)} at {timeOfDay(t.start)}, <span className="num">{t.miles.toLocaleString()}</span> mi
+                  {t.hardBrakes > 0 && `, ${t.hardBrakes} hard ${t.hardBrakes === 1 ? "brake" : "brakes"}`}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => openReplay({ tripId: t.id })}
-                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink transition-colors hover:border-line-2 hover:bg-[var(--glass-hi)]"
+                className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line px-3 text-[13px] font-medium text-ink transition-colors duration-200 ease-ui-color hover:border-line-2 hover:bg-[var(--glass-hi)]"
                 aria-label={`Replay trip to ${t.destinationLabel}`}
               >
                 <Play size={13} className="fill-current" />
@@ -207,7 +210,7 @@ export function DrivingLife({ data }: { data?: DashboardData }) {
       <div className="mt-6 grid grid-cols-1 gap-x-10 gap-y-8 xl:grid-cols-2">
         <div>
           <h3 className="mb-3 text-sm font-medium text-ink-2">Driving score</h3>
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex flex-col gap-5 2xl:flex-row 2xl:items-start">
             <div className="flex shrink-0 flex-col items-center">
               <ScoreGauge score={d.score} />
               <p className="-mt-1 text-xs text-ink-3">Simulated score</p>

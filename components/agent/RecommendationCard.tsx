@@ -1,9 +1,10 @@
 "use client";
 
+import { blur, transition as motionTransition, useTempoTransition } from "@animate-ui/react/utils/motion";
 import clsx from "clsx";
 import { Check, Info, Pencil, X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { AnimatePresence, motion, useIsPresent } from "motion/react";
+import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { moveIcon } from "@/components/dashboard/MoveTiles";
@@ -20,6 +21,39 @@ const REASONS: { id: DismissReason; label: string }[] = [
   { id: "already-done", label: "Already done" },
 ];
 
+const CardControls = forwardRef<HTMLDivElement, {
+  reasons: boolean;
+  children: React.ReactNode;
+}>(function CardControls({ reasons, children }, forwardedRef) {
+  const ref = useRef<HTMLDivElement>(null);
+  useImperativeHandle(forwardedRef, () => ref.current!);
+  const present = useIsPresent();
+  const disclosure = useTempoTransition(motionTransition.disclosure);
+  const fade = useTempoTransition(motionTransition.fade);
+  useLayoutEffect(() => {
+    const content = ref.current;
+    if (!content) return;
+    if (!present && content.contains(document.activeElement)) content.closest("article")?.focus({ preventScroll: true });
+    content.inert = !present;
+  }, [present]);
+  return (
+    <motion.div
+      ref={ref}
+      data-card-controls={reasons ? "reasons" : "actions"}
+      initial={reasons ? { opacity: 0, height: 0, filter: blur.disclosure } : { opacity: 0 }}
+      animate={reasons
+        ? { opacity: 1, height: "auto", filter: "blur(0px)", transition: disclosure, transitionEnd: { filter: "none" } }
+        : { opacity: 1, transition: fade }}
+      exit={reasons
+        ? { opacity: 0, height: 0, filter: blur.disclosure, transition: disclosure }
+        : { opacity: 0, transition: fade }}
+      className={reasons ? "overflow-hidden" : "mt-3.5 flex flex-wrap items-center gap-1"}
+    >
+      {children}
+    </motion.div>
+  );
+});
+
 export function RecommendationCard({ rec, primary }: { rec: Recommendation; primary: boolean }) {
   const personaId = useUiStore((s) => s.personaId);
   const askAgent = useUiStore((s) => s.askAgent);
@@ -28,26 +62,35 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
   const openWhy = useOverlayStore((s) => s.openWhy);
   const openAccept = useOverlayStore((s) => s.openAccept);
   const [dismissing, setDismissing] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
+  const previousDismissing = useRef(dismissing);
+  useLayoutEffect(() => {
+    if (previousDismissing.current === dismissing) return;
+    previousDismissing.current = dismissing;
+    const selector = dismissing ? '[data-card-controls="reasons"] button' : '[data-dismiss-trigger]';
+    articleRef.current?.querySelector<HTMLElement>(selector)?.focus({ preventScroll: true });
+  }, [dismissing]);
   const Icon = moveIcon[rec.moveType];
   const accepted = rec.status === "accepted";
 
   if (accepted) {
     return (
-      <motion.div layout className="flex items-center gap-3 rounded-lg border border-line px-4 py-3">
-        <motion.span layoutId={`accept-${rec.optionId}`} className="grid size-7 place-items-center rounded-full bg-good text-bg">
+      <div className="flex items-center gap-3 rounded-lg border border-line px-4 py-3">
+        <span className="grid size-7 place-items-center rounded-full bg-good text-bg">
           <Check size={15} strokeWidth={3} />
-        </motion.span>
+        </span>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium text-ink">{rec.title}</div>
-          <div className="text-xs text-ink-3">Accepted · see Next steps</div>
+          <div className="text-xs text-ink-3">Accepted. See Next steps below.</div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.article
-      layout
+    <article
+      ref={articleRef}
+      tabIndex={-1}
       className={clsx("relative rounded-xl border p-4", primary ? "glow-accent border-transparent bg-[var(--glass)]" : "border-line bg-[var(--glass)]")}
       aria-label={rec.title}
       data-move={rec.moveType}
@@ -66,9 +109,9 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
         </div>
       </div>
 
-      <AnimatePresence initial={false} mode="wait">
+      <AnimatePresence initial={false} mode="popLayout">
         {dismissing ? (
-          <motion.div key="reasons" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+          <CardControls key="reasons" reasons>
             <div className="mt-3.5 border-t border-line pt-3">
               <p id={`dismiss-${rec.id}`} className="mb-2 text-xs text-ink-3">
                 Why are you dismissing this? It helps the copilot learn.
@@ -79,7 +122,7 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
                     key={r.id}
                     type="button"
                     onClick={() => void dismiss(personaId, rec.optionId, r.id)}
-                    className="h-8 rounded-full border border-line-2 px-3 text-[13px] font-medium text-ink transition-colors hover:bg-[var(--glass-hi)]"
+                    className="h-8 rounded-full border border-line-2 px-3 text-[13px] font-medium text-ink transition-colors duration-200 ease-ui-color hover:bg-[var(--glass-hi)]"
                   >
                     {r.label}
                   </button>
@@ -89,9 +132,9 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
                 </button>
               </div>
             </div>
-          </motion.div>
+          </CardControls>
         ) : (
-          <motion.div key="actions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-3.5 flex flex-wrap items-center gap-1">
+          <CardControls key="actions" reasons={false}>
             <Button size="sm" variant={primary ? "primary" : "solid"} onClick={() => openAccept(rec.optionId)} className="mr-1">
               Accept
             </Button>
@@ -110,13 +153,13 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
               <Pencil size={13} />
               Edit
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setDismissing(true)} aria-label={`Dismiss ${rec.title}`} className="ml-auto">
+            <Button size="sm" variant="ghost" onClick={() => setDismissing(true)} data-dismiss-trigger aria-label={`Dismiss ${rec.title}`} className="ml-auto">
               <X size={14} />
               Dismiss
             </Button>
-          </motion.div>
+          </CardControls>
         )}
       </AnimatePresence>
-    </motion.article>
+    </article>
   );
 }

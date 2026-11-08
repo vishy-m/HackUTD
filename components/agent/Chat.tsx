@@ -1,8 +1,10 @@
 "use client";
 
+import { transition as motionTransition, useShouldReduceMotion, useTempoTransition } from "@animate-ui/react/utils/motion";
+import { usePageVisible } from "@animate-ui/react/utils/use-page-visible";
 import clsx from "clsx";
 import { ArrowUp, Check, CircleAlert, CornerDownRight, Loader2, Square, X } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef } from "react";
 import { useDataStore, type ChatMessage } from "@/lib/client/data-store";
 import { moveLabel, toolLabel } from "@/lib/client/format";
@@ -33,6 +35,26 @@ function suggestions(d?: DashboardData) {
   return s.slice(0, 4);
 }
 
+function ThinkingIndicator() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref);
+  const visible = usePageVisible();
+  return (
+    <div ref={ref} className="flex gap-1 py-1" aria-label="Copilot is thinking">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="size-1.5 rounded-full bg-ink-3"
+          animate={{ opacity: inView && visible ? [0.3, 1, 0.3] : 1 }}
+          transition={inView && visible
+            ? { duration: 1.1, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }
+            : motionTransition.instant}
+        />
+      ))}
+    </div>
+  );
+}
+
 function AgentMessage({ m }: { m: ChatMessage }) {
   return (
     <div className="space-y-2">
@@ -57,16 +79,7 @@ function AgentMessage({ m }: { m: ChatMessage }) {
       {m.text ? (
         <Markdown text={m.text} className="text-[14px] leading-relaxed text-ink-2" />
       ) : m.streaming && m.tools.length === 0 ? (
-        <div className="flex gap-1 py-1" aria-label="Copilot is thinking">
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              className="size-1.5 rounded-full bg-ink-3"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
-            />
-          ))}
-        </div>
+        <ThinkingIndicator />
       ) : null}
       {m.actions.map((a, i) => (
         <div key={i} className="flex items-center gap-2 text-xs text-ink-3">
@@ -76,7 +89,7 @@ function AgentMessage({ m }: { m: ChatMessage }) {
       ))}
       {m.drafts.map((d) => (
         <div key={d.id} className="rounded-lg border border-line p-3">
-          <div className="mb-1 text-xs font-medium text-ink-3">Draft · {d.title}</div>
+          <div className="mb-1 text-xs font-medium text-ink-3">Draft: {d.title}</div>
           <Markdown text={d.body} className="text-[13px] text-ink-2" />
         </div>
       ))}
@@ -107,7 +120,8 @@ export function ChatThread({ data }: { data?: DashboardData }) {
   const send = useDataStore((s) => s.send);
   const streaming = useDataStore((s) => s.streaming);
   const endRef = useRef<HTMLDivElement>(null);
-  const reduced = useUiStore((s) => s.reducedMotion);
+  const reduced = useShouldReduceMotion();
+  const reveal = useTempoTransition(motionTransition.reveal);
 
   // Scroll only the panel's own scroller (never the page) as the reply streams in.
   useEffect(() => {
@@ -119,15 +133,22 @@ export function ChatThread({ data }: { data?: DashboardData }) {
   const ctx = useUiStore((s) => s.agentContext);
   return (
     <div className="space-y-4" aria-live="polite" aria-busy={streaming}>
-      {(messages ?? []).map((m) =>
-        m.role === "user" ? (
-          <div key={m.id} className="flex justify-end">
-            <div className="max-w-[85%] rounded-lg rounded-br-md bg-ink px-3.5 py-2 text-[14px] text-bg">{m.text}</div>
-          </div>
-        ) : (
-          <AgentMessage key={m.id} m={m} />
-        ),
-      )}
+      <AnimatePresence initial={false}>
+        {(messages ?? []).map((m) => (
+          <motion.div
+            key={m.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0, transition: reveal }}
+            className={m.role === "user" ? "flex justify-end" : undefined}
+          >
+            {m.role === "user" ? (
+              <div className="max-w-[85%] rounded-lg rounded-br-md bg-ink px-3.5 py-2 text-[14px] text-bg">{m.text}</div>
+            ) : (
+              <AgentMessage m={m} />
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
       {!streaming && (
         <div className="flex flex-wrap gap-1.5">
           {suggestions(data).map((s) => (
@@ -135,7 +156,7 @@ export function ChatThread({ data }: { data?: DashboardData }) {
               key={s}
               type="button"
               onClick={() => void send(personaId, s, ctx)}
-              className="rounded-full border border-line px-3 py-1.5 text-left text-[13px] text-ink-2 transition-colors hover:border-line-2 hover:text-ink"
+              className="rounded-full border border-line px-3 py-1.5 text-left text-[13px] text-ink-2 transition-colors duration-200 ease-ui-color hover:border-line-2 hover:text-ink"
             >
               {s}
             </button>
@@ -224,20 +245,15 @@ export function ChatInput() {
           className="min-h-9 flex-1 resize-none bg-transparent py-2 text-[14px] text-ink outline-none placeholder:text-ink-3"
           style={{ outline: "none" }}
         />
-        {streaming ? (
-          <button type="button" onClick={stop} aria-label="Stop" className="grid size-9 shrink-0 place-items-center rounded-lg bg-line-2 text-ink">
-            <Square size={13} className="fill-current" />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            aria-label="Send"
-            disabled={!value.trim()}
-            className={clsx("grid size-9 shrink-0 place-items-center rounded-lg transition-colors", value.trim() ? "bg-ink text-bg" : "bg-line text-ink-3")}
-          >
-            <ArrowUp size={16} />
-          </button>
-        )}
+        <button
+          type={streaming ? "button" : "submit"}
+          onClick={streaming ? stop : undefined}
+          aria-label={streaming ? "Stop" : "Send"}
+          disabled={!streaming && !value.trim()}
+          className={clsx("grid size-9 shrink-0 place-items-center rounded-lg transition-colors duration-200 ease-ui-color", streaming ? "bg-line-2 text-ink" : value.trim() ? "bg-ink text-bg" : "bg-line text-ink-3")}
+        >
+          {streaming ? <Square size={13} className="fill-current" /> : <ArrowUp size={16} />}
+        </button>
       </div>
     </form>
   );

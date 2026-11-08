@@ -19,14 +19,14 @@ const label = "block text-[13px] font-medium text-ink-2";
 
 const shopsByCity: Record<string, { name: string; detail: string }[]> = {
   Austin: [
-    { name: "North Austin Toyota Service", detail: "Toyota service · 6.2 mi" },
-    { name: "Lone Star Auto Care", detail: "Independent shop · 3.8 mi" },
-    { name: "Capitol Car Clinic", detail: "ASE-certified · 5.1 mi" },
+    { name: "North Austin Toyota Service", detail: "Toyota service, 6.2 mi" },
+    { name: "Lone Star Auto Care", detail: "Independent shop, 3.8 mi" },
+    { name: "Capitol Car Clinic", detail: "ASE-certified, 5.1 mi" },
   ],
   Houston: [
-    { name: "Gulf Coast Toyota Service", detail: "Toyota service · 7.4 mi" },
-    { name: "Bayou Auto Care", detail: "Independent shop · 4.2 mi" },
-    { name: "Inner Loop Garage", detail: "ASE-certified · 5.9 mi" },
+    { name: "Gulf Coast Toyota Service", detail: "Toyota service, 7.4 mi" },
+    { name: "Bayou Auto Care", detail: "Independent shop, 4.2 mi" },
+    { name: "Inner Loop Garage", detail: "ASE-certified, 5.9 mi" },
   ],
 };
 
@@ -163,7 +163,7 @@ function EstimateStep({ form, update }: { form: FormState; update: (patch: Parti
         <ul className="mt-3 grid gap-2 sm:grid-cols-3">
           {shops.map((shop) => (
             <li key={shop.name}>
-              <button type="button" onClick={() => update({ shopName: shop.name })} className={clsx("h-full w-full rounded-lg border p-3.5 text-left transition-colors", form.shopName === shop.name ? "border-accent bg-accent-soft" : "border-line hover:border-line-2")}>
+              <button type="button" onClick={() => update({ shopName: shop.name })} className={clsx("h-full w-full rounded-lg border p-3.5 text-left transition-colors duration-200 ease-ui-color", form.shopName === shop.name ? "border-accent bg-accent-soft" : "border-line hover:border-line-2")}>
                 <MapPin size={15} className="text-ink-3" /><span className="mt-2 block text-sm font-medium text-ink">{shop.name}</span><span className="mt-1 block text-xs text-ink-3">{shop.detail}</span>
               </button>
             </li>
@@ -246,13 +246,13 @@ function PlanStep({ form }: { form: FormState }) {
         </div>
       </div>
       {result.replacements.length > 0 && (
-        <div><h3 className="text-sm font-semibold text-ink">Affordable replacements</h3><div className="mt-3 grid gap-2 sm:grid-cols-3">{result.replacements.map((car) => <div key={car.name} className="rounded-lg border border-line p-4"><Building2 size={16} className="text-ink-3" /><div className="mt-3 text-sm font-medium text-ink">{car.name}</div><div className="num mt-1 text-lg font-semibold text-ink">{money(car.monthly)}/mo</div><div className="mt-1 text-xs text-ink-3">{car.fit} · {money(car.price)}</div></div>)}</div></div>
+        <div><h3 className="text-sm font-semibold text-ink">Affordable replacements</h3><div className="mt-3 grid gap-2 sm:grid-cols-3">{result.replacements.map((car) => <div key={car.name} className="rounded-lg border border-line p-4"><Building2 size={16} className="text-ink-3" /><div className="mt-3 text-sm font-medium text-ink">{car.name}</div><div className="num mt-1 text-lg font-semibold text-ink">{money(car.monthly)}/mo</div><div className="mt-1 text-xs text-ink-3">{car.fit}, {money(car.price)}</div></div>)}</div></div>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
-        <Panel title="Save for the next car" className="!p-4 sm:!p-5">
+        <Panel variant="card" title="Save for the next car" className="!p-4 sm:!p-5">
           {fund ? <div><div className="flex items-center gap-2 text-good"><Check size={16} /><span className="text-sm font-semibold">Car Fund ready</span></div><p className="mt-2 text-sm text-ink-2">{money(fund.monthly)}/month toward {money(fund.target)}.</p></div> : <div><p className="text-sm text-ink-2">Set aside part of your monthly room.</p><Button className="mt-4" onClick={() => setFund({ monthly: Math.max(50, Math.round(form.monthlySurplus * 0.2)), target: 5000 })}><PiggyBank size={15} />Create Car Fund</Button></div>}
         </Panel>
-        <Panel title="Talk to a specialist" className="!p-4 sm:!p-5"><p className="text-sm text-ink-2">Preview a concise request before contacting anyone.</p><Button className="mt-4" onClick={() => setDealerOpen(true)}><Building2 size={15} />Prepare request</Button></Panel>
+        <Panel variant="card" title="Talk to a specialist" className="!p-4 sm:!p-5"><p className="text-sm text-ink-2">Preview a concise request before contacting anyone.</p><Button className="mt-4" onClick={() => setDealerOpen(true)}><Building2 size={15} />Prepare request</Button></Panel>
       </div>
       <p className="text-xs leading-relaxed text-ink-3">Illustrative estimates only. Confirm repair pricing, vehicle value, rates, and approval with qualified providers.</p>
       <DealerSheet open={dealerOpen} onClose={() => setDealerOpen(false)} form={form} path={result.recommendation} />
@@ -271,8 +271,8 @@ export function RepairAdvisor({ data }: { data?: DashboardData }) {
 
   return (
     <section aria-labelledby="repair-advisor-title" className="w-full">
-      <div className="mb-5 flex items-start justify-between gap-4 border-b border-line pb-5">
-        <div><h1 id="repair-advisor-title" className="font-display text-[28px] leading-tight text-ink sm:text-[32px]">Repair or replace</h1><p className="mt-1.5 max-w-xl text-[15px] text-ink-2">Four steps: the problem, the estimate, your budget, then a plan that compares repairing, trading in and refinancing.</p></div>
+      <div className="flex items-end justify-between gap-4 pb-8">
+        <div><h1 id="repair-advisor-title" className="font-display text-[clamp(39px,4.4vw,61px)] text-ink">Repair or replace</h1><p className="mt-3 max-w-[56ch] text-[17px] leading-relaxed text-ink-2">Four steps: the problem, the estimate, your budget, then a plan that compares repairing, trading in and refinancing.</p></div>
         <Button variant="ghost" size="sm" onClick={reset}><RotateCcw size={14} />Start over</Button>
       </div>
       <div className="glass max-w-5xl rounded-xl p-5 sm:p-7">

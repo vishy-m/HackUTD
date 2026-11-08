@@ -1,5 +1,6 @@
 "use client";
 
+import { spring, transition, useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import { motion } from "motion/react";
 
 /** Progress ring (e.g. months elapsed in a contract). `value` in 0..1. */
@@ -18,6 +19,7 @@ export function Ring({
   children?: React.ReactNode;
   label: string;
 }) {
+  const reduce = useShouldReduceMotion();
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const color = { ink: "var(--ink)", accent: "var(--accent)", good: "var(--good)", warn: "var(--warn)" }[tone];
@@ -36,7 +38,7 @@ export function Ring({
           strokeDasharray={c}
           initial={false}
           animate={{ strokeDashoffset: c * (1 - Math.max(0, Math.min(1, value))) }}
-          transition={{ type: "spring", stiffness: 70, damping: 18 }}
+          transition={reduce ? transition.instant : spring.number}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">{children}</div>

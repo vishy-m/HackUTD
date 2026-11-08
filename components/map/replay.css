@@ -40,12 +40,13 @@
   transition: background 1.2s ease;
   mix-blend-mode: multiply;
 }
-.nm-callout {
-  animation: nm-callout-in 380ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+.nm-replay-callout {
+  transform: translate(-50%, 0);
+  animation: nm-replay-callout-in 300ms var(--ease-ui-out) both;
 }
-@keyframes nm-callout-in {
-  from { opacity: 0; transform: translate(-50%, -10px) scale(0.96); }
-  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+@keyframes nm-replay-callout-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 .nm-scrub {
   -webkit-appearance: none;
@@ -66,8 +67,8 @@
   border: 0;
   background: transparent;
 }
-.nm-scrub:focus-visible + .nm-thumb,
-.nm-scrub:focus-visible ~ .nm-thumb {
+.nm-scrub:focus-visible + .nm-thumb > span,
+.nm-scrub:focus-visible ~ .nm-thumb > span {
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
@@ -80,7 +81,13 @@
   to { background-position: -200% 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nm-evt.is-active .nm-evt-ring, .nm-callout, .nm-loading-sheen { animation: none; }
+  .nm-evt.is-active .nm-evt-ring, .nm-loading-sheen { animation: none; }
+  .nm-replay-callout { animation-name: nm-replay-callout-fade; }
 }
-.nm-reduced .nm-evt.is-active .nm-evt-ring, .nm-reduced .nm-callout, .nm-reduced .nm-loading-sheen { animation: none; }
+.nm-reduced .nm-evt.is-active .nm-evt-ring, .nm-reduced .nm-loading-sheen { animation: none; }
+.nm-reduced .nm-replay-callout { animation-name: nm-replay-callout-fade; }
+@keyframes nm-replay-callout-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 .nm-replay .mapboxgl-ctrl-attrib, .nm-replay .maplibregl-ctrl-attrib { font-size: 10px; }

@@ -1,6 +1,7 @@
 "use client";
-// One car: loads a GLB, normalizes it (nose → +Z, wheels on y=0, real-world length),
-// upgrades materials for a studio look, eases the paint color and spins wheels on demand.
+// One car: loads a GLB, normalizes it (nose → +Z, wheels on y=0, real-world length), eases the paint
+// color and spins wheels on demand. Low-poly fallbacks get studio materials by name; hero models keep
+// the materials their author made (keepMaterials), only the paint material's color changes.
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type RefObject } from "react";
@@ -20,6 +21,8 @@ export interface CarModelProps {
   onAnchors?(a: HotspotAnchors, size: THREE.Vector3): void;
   /** Instant color (no tween) for the first render. */
   instantPaint?: boolean;
+  /** Keep the GLB's own materials (hero models); only `paintMaterial` takes the paint color. */
+  keepMaterials?: boolean;
 }
 
 const tmpColor = new THREE.Color();
@@ -61,13 +64,22 @@ function studioMaterial(src: THREE.Material, paintName: string, paint: THREE.Col
   return c;
 }
 
-export default function CarModel({ url, rotationY = 0, length, paintMaterial, paintHex, wheelSpin, onAnchors, instantPaint }: CarModelProps) {
+/** The author's material, untouched, except the paint: a per-car copy so the tint never leaks into the GLTF cache. */
+function authoredMaterial(src: THREE.Material, paintName: string, paint: THREE.Color): THREE.Material {
+  if (src.name !== paintName || !("color" in src)) return src;
+  const m = src.clone() as THREE.MeshStandardMaterial;
+  m.color.copy(paint);
+  m.userData.isPaint = true;
+  return m;
+}
+
+export default function CarModel({ url, rotationY = 0, length, paintMaterial, paintHex, wheelSpin, onAnchors, instantPaint, keepMaterials = false }: CarModelProps) {
   const { scene } = useGLTF(url);
   const target = useMemo(() => new THREE.Color(paintHex), [paintHex]);
 
   const { root, paints, wheels, anchors, size } = useMemo(() => {
     const root = scene.clone(true);
-    const paints: THREE.MeshPhysicalMaterial[] = [];
+    const paints: THREE.MeshStandardMaterial[] = [];
     const wheels: THREE.Object3D[] = [];
     const startPaint = new THREE.Color(paintHex);
     root.traverse((o) => {
@@ -77,8 +89,8 @@ export default function CarModel({ url, rotationY = 0, length, paintMaterial, pa
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const next = mats.map((m) => studioMaterial(m, paintMaterial, startPaint));
-      next.forEach((m) => m.userData.isPaint && paints.push(m as THREE.MeshPhysicalMaterial));
+      const next = mats.map((m) => (keepMaterials ? authoredMaterial(m, paintMaterial, startPaint) : studioMaterial(m, paintMaterial, startPaint)));
+      next.forEach((m) => m.userData.isPaint && paints.push(m as THREE.MeshStandardMaterial));
       mesh.material = Array.isArray(mesh.material) ? next : next[0];
     });
     // Normalize orientation, scale and floor contact.
@@ -114,7 +126,7 @@ export default function CarModel({ url, rotationY = 0, length, paintMaterial, pa
     };
     return { root: holder, paints, wheels, anchors, size };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, rotationY, length, paintMaterial]);
+  }, [scene, rotationY, length, paintMaterial, keepMaterials]);
 
   const reported = useRef<THREE.Object3D | null>(null);
   useLayoutEffect(() => {

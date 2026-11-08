@@ -66,7 +66,7 @@ export function MoveTiles({ data }: { data?: DashboardData }) {
             onClick={() => setOpenMove(m)}
             aria-label={`${moveLabel[m]}: ${o?.title ?? "no options"}. Open details`}
             className={clsx(
-              "group glass relative flex min-h-[150px] flex-col justify-between rounded-xl p-4 text-left transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-ink-3 sm:p-5",
+              "group glass relative flex min-h-[150px] flex-col justify-between rounded-xl p-4 text-left transition-[translate,scale,border-color] duration-[300ms,400ms,200ms] ease-[var(--ease-highlight),var(--ease-press),var(--ease-ui-color)] hover:-translate-y-0.5 active:scale-[0.985] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100 hover:border-ink-3 sm:p-5",
               isTop && "glow-accent",
               notApplicable && "opacity-70",
             )}

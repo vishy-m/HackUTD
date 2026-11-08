@@ -2,11 +2,28 @@
 
 import clsx from "clsx";
 import { X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
+import { blur, spring, transition, useShouldReduceMotion, useTempoTransition } from "@animate-ui/react/utils/motion";
+import { AnimatePresence, motion, type Transition } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useMinWidth, useMounted } from "@/lib/client/hooks";
-import { useUiStore } from "@/lib/client/ui-store";
+
+/**
+ * The page behind a modal surface dims from nothing on transition.overlay, both ways. It animates
+ * its background color, not its opacity, so the color and anything layered on it come in together.
+ */
+function Scrim({ color, onClick }: { color: string; onClick: () => void }) {
+  const overlay = useTempoTransition(transition.overlay) as Transition;
+  return (
+    <motion.div
+      className="absolute inset-0"
+      initial={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
+      animate={{ backgroundColor: color, transition: overlay }}
+      exit={{ backgroundColor: "rgba(0, 0, 0, 0)", transition: overlay }}
+      onClick={onClick}
+    />
+  );
+}
 
 const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
 
@@ -76,22 +93,22 @@ export function Drawer({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const desktop = useMinWidth(1024);
-  const reduced = useUiStore((s) => s.reducedMotion);
+  const reduce = useShouldReduceMotion();
   useDialogBehavior(open, onClose, ref);
-  const spring = reduced ? { duration: 0 } : { type: "spring" as const, stiffness: 380, damping: 38 };
+  // Sheet recipe: slides from its edge by its own size while it fades, in on transition.sheet (no
+  // bounce, it's held against the edge), dismissed on transition.dismiss (at once, speeding away).
+  // Desktop floats 12px off the right edge, so it travels its width plus that gap.
+  const enter = useTempoTransition(transition.sheet) as Transition;
+  const leave = useTempoTransition(transition.dismiss) as Transition;
+  const shown = desktop ? "translateX(0%)" : "translateY(0%)";
+  const offscreen = desktop ? "translateX(calc(100% + 12px))" : "translateY(100%)";
+  const hidden = { opacity: 0, transform: reduce ? shown : offscreen };
   return (
     <Portal>
       <AnimatePresence>
         {open && (
           <div className="fixed inset-0 z-50">
-            <motion.div
-              className="absolute inset-0 bg-black/40"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reduced ? 0 : 0.2 }}
-              onClick={onClose}
-            />
+            <Scrim color="rgba(0, 0, 0, 0.4)" onClick={onClose} />
             <motion.div
               ref={ref}
               role="dialog"
@@ -102,10 +119,9 @@ export function Drawer({
                 desktop ? "top-3 right-3 bottom-3 rounded-xl" : "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-xl",
               )}
               style={desktop ? { width: `min(${width}px, calc(100vw - 24px))` } : undefined}
-              initial={desktop ? { x: 40, opacity: 0 } : { y: "100%" }}
-              animate={desktop ? { x: 0, opacity: 1 } : { y: 0 }}
-              exit={desktop ? { x: 40, opacity: 0 } : { y: "100%" }}
-              transition={spring}
+              initial={hidden}
+              animate={{ opacity: 1, transform: shown, transition: enter }}
+              exit={{ ...hidden, transition: leave }}
             >
               {!desktop && <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line-2" aria-hidden />}
               <header className="flex items-start justify-between gap-4 px-5 pt-4 pb-3 sm:px-7 sm:pt-6">
@@ -149,31 +165,38 @@ export function Modal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduced = useUiStore((s) => s.reducedMotion);
+  const reduce = useShouldReduceMotion();
   useDialogBehavior(open, onClose, ref);
+  // Modal recipe, flat: it fades in at once (transition.dialogFade) out of blur.surface while it
+  // settles from a slight scale on spring.dialog (calm, no overshoot); dismissed on
+  // transition.dismiss. The recipe's forward tilt is left out to match the product's flat UI.
+  const settle = useTempoTransition(transition.dialogFade) as Transition;
+  const tip = useTempoTransition(spring.dialog) as Transition;
+  const leave = useTempoTransition(transition.dismiss) as Transition;
+  const rest = "translateY(0px) scale(1)";
+  const hidden = { opacity: 0, filter: blur.surface, transform: reduce ? rest : "translateY(8px) scale(0.96)" };
   return (
     <Portal>
       <AnimatePresence>
         {open && (
           <div className="fixed inset-0 z-[60] grid place-items-end p-3 sm:place-items-center sm:p-6">
-            <motion.div
-              className="absolute inset-0 bg-black/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reduced ? 0 : 0.18 }}
-              onClick={onClose}
-            />
+            <Scrim color="rgba(0, 0, 0, 0.5)" onClick={onClose} />
             <motion.div
               ref={ref}
               role="dialog"
               aria-modal="true"
               aria-labelledby={labelledBy}
               className={clsx("glass-strong relative w-full max-w-[480px] rounded-xl p-6 sm:p-7", className)}
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: 8 }}
-              transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 32 }}
+              initial={hidden}
+              animate={{
+                opacity: 1,
+                filter: "blur(0px)",
+                transform: rest,
+                transition: { ...tip, opacity: settle, filter: settle },
+                // No filter at rest: a filter would make this the containing block of fixed children.
+                transitionEnd: { filter: "none" },
+              }}
+              exit={{ ...hidden, transition: leave }}
             >
               {children}
             </motion.div>

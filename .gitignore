@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 3D model sources (Sketchfab downloads, ~300 MB). scripts/models/prepare-sketchfab.mjs reads them
+# and writes the shipped files to public/models/.
+/models/
+# local tool state
+/.taste-skill/

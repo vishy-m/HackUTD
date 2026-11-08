@@ -246,8 +246,8 @@ export function calloutText(e: TripEvent, events: TripEvent[]): string {
   if (e.type === "speeding-start") {
     const end = events.find((x) => x.type === "speeding-end" && x.t > e.t);
     delta = end?.scoreDelta ?? 0;
-    return `${st.label} · ${delta ? pts(delta) : "watch the limit"}`;
+    return `${st.label}, ${delta ? pts(delta) : "watch the limit"}`;
   }
-  if (e.type === "speeding-end") return `${st.label} · ${e.scoreDelta ? `${pts(e.scoreDelta)} for the stretch` : "nice"}`;
-  return `${st.label} · ${pts(delta)}`;
+  if (e.type === "speeding-end") return `${st.label}, ${e.scoreDelta ? `${pts(e.scoreDelta)} for the stretch` : "nice"}`;
+  return `${st.label}, ${pts(delta)}`;
 }

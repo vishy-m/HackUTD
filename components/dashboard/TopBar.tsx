@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { Check, ChevronDown, Moon, PanelRightClose, PanelRightOpen, ShieldCheck, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { blur, scale, spring, transition, useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@/components/ui/Button";
@@ -23,6 +24,28 @@ export function ShiftMark({ className }: { className?: string }) {
   );
 }
 
+/** Swap recipe: the old glyph shrinks into blur.icon as the new one grows out of it, in place. */
+function IconSwap({ id, children }: { id: string; children: React.ReactNode }) {
+  const reduce = useShouldReduceMotion();
+  const from = reduce ? 1 : scale.icon;
+  const hidden = { opacity: 0, scale: from, filter: blur.icon, transition: transition.swap };
+  return (
+    <span className="relative inline-grid size-[18px] place-items-center">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span
+          key={id}
+          className="col-start-1 row-start-1 grid place-items-center"
+          initial={hidden}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)", transition: transition.swap }}
+          exit={hidden}
+        >
+          {children}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
 /** Two-letter initials in place of an emoji avatar. */
 export function initials(name: string) {
   return name
@@ -38,7 +61,7 @@ export function situation(p: Persona) {
   const role = p.displayName.split("·")[1]?.trim() ?? p.city;
   const c = p.contract;
   const contract = c.kind === "lease" ? `lease ends in ${c.monthsRemaining} mo` : `loan at ${c.apr}% APR`;
-  return `${role} · ${contract}`;
+  return `${role}, ${contract}`;
 }
 
 function PersonaSwitcher({ current }: { current: PersonaId }) {
@@ -93,7 +116,7 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
           <span className="block truncate text-sm leading-tight font-semibold text-ink">{p.name}</span>
           <span className="hidden truncate text-xs leading-tight text-ink-3 sm:block">{situation(p)}</span>
         </span>
-        <ChevronDown size={16} className={clsx("shrink-0 text-ink-3 transition-transform", open && "rotate-180")} />
+        <ChevronDown size={16} className={clsx("shrink-0 text-ink-3 transition-[rotate] duration-[220ms] ease-ui-soft", open && "rotate-180")} />
       </button>
       <AnimatePresence>
         {open && (
@@ -118,11 +141,11 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
                 btn.current?.focus();
               }
             }}
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 520, damping: 36 }}
-            className="glass-strong absolute top-[calc(100%+6px)] left-0 z-40 w-[min(340px,calc(100vw-32px))] origin-top-left rounded-lg p-1 outline-none"
+            initial={{ opacity: 0, scale: scale.menu }}
+            animate={{ opacity: 1, scale: 1, transition: transition.menu }}
+            exit={{ opacity: 0, scale: scale.menu, transition: transition.menu }}
+            style={{ originX: 0, originY: 0 }}
+            className="glass-strong absolute top-[calc(100%+6px)] left-0 z-40 w-[min(340px,calc(100vw-32px))] rounded-lg p-1 outline-none"
           >
             {personaOrder.map((id, i) => {
               const q = mockPersonas[id];
@@ -135,21 +158,21 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
                   aria-selected={selected}
                   onMouseEnter={() => setActive(i)}
                   onClick={() => choose(id)}
-                  className={clsx(
-                    "flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2",
-                    i === active && "bg-[var(--glass-hi)]",
-                  )}
+                  className="relative flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2"
                 >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-md bg-ink text-[12px] font-semibold text-bg" aria-hidden>
+                  {i === active && (
+                    <motion.span layoutId="persona-highlight" className="absolute inset-0 rounded-md bg-[var(--glass-hi)]" transition={spring.highlight} aria-hidden />
+                  )}
+                  <span className="relative grid size-8 shrink-0 place-items-center rounded-md bg-ink text-[12px] font-semibold text-bg" aria-hidden>
                     {initials(q.name)}
                   </span>
-                  <span className="min-w-0 flex-1">
+                  <span className="relative min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-ink">{q.name}</span>
                     <span className="block truncate text-xs text-ink-3">
-                      {q.vehicle.year} {q.vehicle.model} · {situation(q)}
+                      {q.vehicle.year} {q.vehicle.model}, {situation(q)}
                     </span>
                   </span>
-                  {selected && <Check size={16} className="text-ink-2" />}
+                  {selected && <Check size={16} className="relative text-ink-2" />}
                 </div>
               );
             })}
@@ -186,12 +209,14 @@ export function TopBar({ data }: { data?: DashboardData }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={clsx(
-              "relative inline-flex h-11 shrink-0 items-center px-3 text-sm font-medium transition-colors xl:h-16",
+              "relative inline-flex h-11 shrink-0 items-center px-3 text-sm font-medium transition-colors duration-200 ease-ui-color xl:h-16",
               active ? "text-ink" : "text-ink-3 hover:text-ink",
             )}
           >
             {item.label}
-            {active && <span className="absolute inset-x-3 bottom-0 h-0.5 bg-ink" aria-hidden />}
+            {active && (
+              <motion.span layoutId={mobile ? "nav-underline-m" : "nav-underline"} className="absolute inset-x-3 bottom-0 h-0.5 bg-ink" transition={spring.selection} aria-hidden />
+            )}
           </Link>
         );
       })}
@@ -233,11 +258,11 @@ export function TopBar({ data }: { data?: DashboardData }) {
             TFS<span className="hidden sm:inline">&nbsp;view</span>
           </Link>
           <IconButton label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            <IconSwap id={theme === "dark" ? "sun" : "moon"}>{theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}</IconSwap>
           </IconButton>
           <span className="hidden lg:contents">
             <IconButton label={panelOpen ? "Hide copilot panel" : "Show copilot panel"} onClick={() => setPanel(!panelOpen)}>
-              {panelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+              <IconSwap id={panelOpen ? "close" : "open"}>{panelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}</IconSwap>
             </IconButton>
           </span>
         </div>

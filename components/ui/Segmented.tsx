@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { spring } from "@animate-ui/react/utils/motion";
 import { motion } from "motion/react";
 import { useId } from "react";
 
@@ -30,7 +31,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={clsx(
-              "relative rounded-md font-medium transition-colors",
+              "relative rounded-md font-medium transition-colors duration-200 ease-ui-color",
               size === "sm" ? "h-7 px-2.5 text-xs" : "h-8 px-3 text-[13px]",
               active ? "text-bg" : "text-ink-2 hover:text-ink",
             )}
@@ -39,10 +40,10 @@ export function Segmented<T extends string>({
               <motion.span
                 layoutId={`seg-${id}`}
                 className="absolute inset-0 rounded-md bg-ink"
-                transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                transition={spring.selection}
               />
             )}
-            <span className="relative">{o.label}</span>
+            <span className="relative z-10">{o.label}</span>
           </button>
         );
       })}

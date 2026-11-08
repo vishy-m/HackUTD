@@ -3,6 +3,7 @@
 // Hover → glowing route + tooltip, click → onSelectTrip(id). Mount with next/dynamic({ ssr: false }).
 import "mapbox-gl/dist/mapbox-gl.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { TripsLayer } from "@deck.gl/geo-layers";
@@ -53,13 +54,14 @@ type AnyMap = {
 };
 
 export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className }: TripHeatmapProps) {
-  const reducedMotion = useUiStore((s) => s.reducedMotion);
+  const reducedMotion = useShouldReduceMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const mapEl = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<AnyMap | null>(null);
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const hoverRef = useRef<string | null>(null);
+  const wakeRef = useRef<() => void>(() => {});
   const [hovered, setHovered] = useState<Row | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [hidden, setHidden] = useState<Set<TripCategory>>(new Set());
@@ -177,7 +179,10 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
   useEffect(() => {
     const el = rootRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(([e]) => { st.current.visible = e.isIntersecting; });
+    const io = new IntersectionObserver(([e]) => {
+      st.current.visible = e.isIntersecting;
+      wakeRef.current();
+    });
     io.observe(el);
     const ro = new ResizeObserver(() => mapRef.current?.resize());
     ro.observe(el);
@@ -201,6 +206,7 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       pickable: true,
       autoHighlight: false,
       onHover: (info) => {
+        if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
         const r = (info.object as Row | undefined) ?? null;
         const id = r?.id ?? null;
         if (tipRef.current) {
@@ -219,11 +225,11 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       },
     });
     const frame = (now: number) => {
-      raf = requestAnimationFrame(frame);
+      raf = 0;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       // Paused while off-screen or while the 3D replay is open over the dashboard.
-      if (!st.current.visible || useUiStore.getState().replay !== null) return;
+      if (!st.current.visible || document.hidden || useUiStore.getState().replay !== null) return;
       const reduced = st.current.reduced;
       st.current.t = reduced ? LOOP : (st.current.t + (dt * (LOOP + TRAIL)) / LOOP_SECONDS) % (LOOP + TRAIL);
       const hov = hoverRef.current ? visibleRows.find((r) => r.id === hoverRef.current) : undefined;
@@ -268,10 +274,29 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
             : []),
         ],
       });
+      if (!reduced) raf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, [status, visibleRows, onSelectTrip]);
+    const wake = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      if (st.current.visible && !document.hidden && useUiStore.getState().replay === null) {
+        last = performance.now();
+        raf = requestAnimationFrame(frame);
+      }
+    };
+    wakeRef.current = wake;
+    document.addEventListener("visibilitychange", wake);
+    const unsubscribe = useUiStore.subscribe((next, previous) => {
+      if (next.replay !== previous.replay) wake();
+    });
+    wake();
+    return () => {
+      cancelAnimationFrame(raf);
+      wakeRef.current = () => {};
+      document.removeEventListener("visibilitychange", wake);
+      unsubscribe();
+    };
+  }, [status, visibleRows, onSelectTrip, reducedMotion, hovered]);
 
   const toggle = (c: TripCategory) =>
     setHidden((h) => {
@@ -292,10 +317,10 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       {status === "error" && (
         <div className="absolute inset-0 grid place-items-center p-6 text-center">
           <div>
-            <p className="mb-3 text-sm text-white/70">Map unavailable · pick a trip to replay</p>
+            <p className="mb-3 text-sm text-white/70">Map unavailable, pick a trip to replay</p>
             <ul className="flex max-w-md flex-wrap justify-center gap-2">
               {rows.map((r) => (
-                <li key={r.id}><button onClick={() => onSelectTrip(r.id)} className="rounded-full border border-white/15 px-3 py-1.5 text-xs">{r.label} · {r.miles.toFixed(0)} mi</button></li>
+                <li key={r.id}><button onClick={() => onSelectTrip(r.id)} className="rounded-full border border-white/15 px-3 py-1.5 text-xs">{r.label}, {r.miles.toFixed(0)} mi</button></li>
               ))}
             </ul>
           </div>
@@ -305,12 +330,12 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       <header className="absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-3 sm:p-4">
         <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
           <p className="text-[11px] text-white/50">Places you&apos;ve been</p>
-          <p className="text-sm font-semibold">{rows.length} trips · {Math.round(rows.reduce((s, r) => s + r.miles, 0)).toLocaleString("en-US")} mi</p>
+          <p className="text-sm font-semibold">{rows.length} trips, {Math.round(rows.reduce((s, r) => s + r.miles, 0)).toLocaleString("en-US")} mi</p>
         </div>
         <button
           type="button"
           onClick={() => bounds && mapRef.current?.fitBounds(bounds, { padding: 80, pitch: 45, bearing: -12, duration: reducedMotion ? 0 : 1000, maxZoom: 12 })}
-          className="h-9 rounded-full border border-white/15 bg-black/40 px-3 text-xs font-medium text-white/85 backdrop-blur-md transition hover:bg-white/10"
+          className="h-9 rounded-full border border-white/15 bg-black/40 px-3 text-xs font-medium text-white/85 backdrop-blur-md transition-[background-color] duration-200 ease-ui-color hover:bg-white/10"
         >
           Reset view
         </button>
@@ -323,20 +348,20 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
               type="button"
               aria-pressed={!hidden.has(c)}
               onClick={() => toggle(c)}
-              className={`flex h-8 items-center gap-1.5 rounded-full border border-white/12 bg-black/45 px-2.5 text-[11px] capitalize backdrop-blur-md transition ${hidden.has(c) ? "opacity-40" : ""}`}
+              className={`flex h-8 items-center gap-1.5 rounded-full border border-white/12 bg-black/45 px-2.5 text-[11px] backdrop-blur-md transition-opacity duration-200 ease-ui-color ${hidden.has(c) ? "opacity-40" : ""}`}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: `rgb(${CATEGORY_COLORS[c].join(",")})`, boxShadow: `0 0 8px rgb(${CATEGORY_COLORS[c].join(",")})` }} />
-              {c.replace("-", " ")} <span className="text-white/45">{counts[c]}</span>
+              {(c.charAt(0).toUpperCase() + c.slice(1)).replace("-", " ")} <span className="text-white/45">{counts[c]}</span>
             </button>
           </li>
         ))}
       </ul>
 
-      <div ref={tipRef} className={`pointer-events-none absolute left-0 top-0 z-10 transition-opacity ${hovered ? "opacity-100" : "opacity-0"}`}>
+      <div ref={tipRef} className={`pointer-events-none absolute left-0 top-0 z-10 transition-opacity duration-200 ease-ui-out ${hovered ? "opacity-100" : "opacity-0"}`}>
         {hovered && (
           <div className="rounded-lg border border-white/15 bg-black/70 px-3 py-2 text-xs shadow-2xl backdrop-blur-md">
             <p className="font-semibold">{hovered.label}</p>
-            <p className="text-white/60 capitalize">{hovered.category.replace("-", " ")} · {hovered.miles.toFixed(1)} mi · score {hovered.score}</p>
+            <p className="text-white/60">{(hovered.category.charAt(0).toUpperCase() + hovered.category.slice(1)).replace("-", " ")}, {hovered.miles.toFixed(1)} mi, score {hovered.score}</p>
             <p className="mt-0.5 text-white/45">Click to replay in 3D</p>
           </div>
         )}

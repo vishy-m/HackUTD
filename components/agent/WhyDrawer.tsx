@@ -1,5 +1,6 @@
 "use client";
 
+import { useShouldReduceMotion } from "@animate-ui/react/utils/motion";
 import clsx from "clsx";
 import { BadgeCheck, CornerDownRight, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -30,6 +31,7 @@ function H({ children }: { children: React.ReactNode }) {
 }
 
 export function WhyDrawer({ data }: { data?: DashboardData }) {
+  const reduced = useShouldReduceMotion();
   const id = useOverlayStore((s) => s.whyOptionId);
   const openWhy = useOverlayStore((s) => s.openWhy);
   const openAccept = useOverlayStore((s) => s.openAccept);
@@ -44,7 +46,7 @@ export function WhyDrawer({ data }: { data?: DashboardData }) {
     setOpenMove(null);
     setTimeout(() => {
       const el = document.getElementById(wid);
-      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      el?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
       el?.focus({ preventScroll: true });
     }, 250);
   };
@@ -120,7 +122,7 @@ export function WhyDrawer({ data }: { data?: DashboardData }) {
                     <CornerDownRight size={14} className="mt-0.5 shrink-0 text-ink-3" />
                     <div className="min-w-0 flex-1">
                       <span className="font-medium text-ink capitalize">{d.source}</span>
-                      <span className="text-ink-2"> · {d.detail}</span>
+                      <span className="text-ink-2">: {d.detail}</span>
                     </div>
                     {w && (
                       <button type="button" onClick={() => goTo(w.id)} className="shrink-0 text-xs font-medium text-ink-2 underline decoration-line-2 underline-offset-4 hover:text-ink">

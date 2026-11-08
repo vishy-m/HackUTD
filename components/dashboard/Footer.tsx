@@ -10,7 +10,7 @@ export function Footer() {
   const mocked = Object.entries(sources).filter(([, s]) => s === "mock").map(([k]) => k);
   return (
     <footer className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-1 pt-2 pb-4 text-xs text-ink-3">
-      <p>Concept prototype · synthetic data. Not an official Toyota or TFS product. Guidance, not financial advice.</p>
+      <p>A concept prototype with synthetic data. It is not an official Toyota or TFS product and is not financial advice.</p>
       <ModelCredits className="w-full sm:w-auto" />
       {mocked.length > 0 && (
         <p title={`Mocked: ${mocked.join(", ")}`}>

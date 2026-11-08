@@ -47,7 +47,7 @@ export default function CarSilhouette({ bodyStyle, paintHex, label }: { bodyStyl
         <rect x="548" y="128" width="12" height="8" rx="3" fill="#fff4dd" />
         <rect x="42" y="130" width="10" height="8" rx="3" fill="#ff2a3a" />
       </svg>
-      <p className="mt-2 text-xs text-white/50">3D view unavailable · static preview</p>
+      <p className="mt-2 text-xs text-white/50">3D view unavailable, showing a static preview</p>
     </div>
   );
 }

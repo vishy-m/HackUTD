@@ -70,6 +70,7 @@ const baseValues: Record<string, number> = {
   "4runner": 47000,
   sienna: 45000,
   prius: 32000,
+  supra: 46000,
 };
 
 const replacementCatalog = [

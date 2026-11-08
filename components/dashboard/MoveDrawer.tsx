@@ -1,5 +1,6 @@
 "use client";
 
+import { blur, spring, transition as motionTransition, useShouldReduceMotion, useTempoTransition } from "@animate-ui/react/utils/motion";
 import clsx from "clsx";
 import { Bot, Info, Loader2, RotateCcw } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -50,6 +51,7 @@ function Control({
   agentMoved: boolean;
   hint?: string;
 }) {
+  const swap = useTempoTransition(motionTransition.swap);
   const fill = ((value - min) / (max - min)) * 100;
   return (
     <div>
@@ -58,9 +60,9 @@ function Control({
           {label}
         </label>
         <span className="flex items-center gap-2">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout" initial={false}>
             {agentMoved && (
-              <motion.span initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+              <motion.span initial={{ opacity: 0, filter: blur.icon }} animate={{ opacity: 1, filter: "blur(0px)", transition: swap }} exit={{ opacity: 0, filter: blur.icon, transition: swap }}>
                 <Chip tone="accent" icon={<Bot size={12} />}>
                   Copilot set this
                 </Chip>
@@ -116,7 +118,7 @@ function useAgentMoved(whatIf: WhatIfOverrides) {
 /* ---------- lease chart ---------- */
 
 function LeaseChart({ data, monthlyMiles, monthsAhead }: { data: DashboardData; monthlyMiles?: number; monthsAhead: number }) {
-  const reduced = useUiStore((s) => s.reducedMotion);
+  const reduced = useShouldReduceMotion();
   // Window: last 12 months + the projection, so the crossing over the allowance is legible.
   const rows = useMemo(() => {
     const all = leaseSeries(data, monthlyMiles);
@@ -197,6 +199,7 @@ function optionHeadline(o: MoveOption, baselineId: string) {
 }
 
 function OptionCard({ o, recommended, baselineId, accepted }: { o: MoveOption; recommended: boolean; baselineId: string; accepted: boolean }) {
+  const reflow = useTempoTransition(spring.reflow);
   const openWhy = useOverlayStore((s) => s.openWhy);
   const openAccept = useOverlayStore((s) => s.openAccept);
   const h = optionHeadline(o, baselineId);
@@ -204,8 +207,9 @@ function OptionCard({ o, recommended, baselineId, accepted }: { o: MoveOption; r
   return (
     <motion.article
       layout="position"
+      transition={{ layout: reflow }}
       className={clsx(
-        "group relative flex flex-col rounded-xl border p-4 transition-colors sm:p-5",
+        "group relative flex flex-col rounded-xl border p-4 transition-colors duration-200 ease-ui-color sm:p-5",
         recommended ? "glow-accent border-transparent bg-[var(--glass)]" : "border-line bg-[var(--glass-hi)] hover:border-line-2",
         !o.eligible && "opacity-60",
       )}
@@ -228,7 +232,7 @@ function OptionCard({ o, recommended, baselineId, accepted }: { o: MoveOption; r
       ) : null}
       <p className="mt-2 text-[13px] leading-snug text-ink-2">{o.eligible ? o.summary : o.ineligibleReason}</p>
       {o.tradeoffs.length > 0 && (
-        <ul className="mt-3 space-y-1 border-t border-line pt-3 text-[12.5px] text-ink-3 transition-colors group-focus-within:text-ink-2 group-hover:text-ink-2" aria-label="Trade-offs">
+        <ul className="mt-3 space-y-1 border-t border-line pt-3 text-[12.5px] text-ink-3 transition-colors duration-200 ease-ui-color group-focus-within:text-ink-2 group-hover:text-ink-2" aria-label="Trade-offs">
           {o.tradeoffs.map((t) => (
             <li key={t} className="flex gap-2">
               <span aria-hidden className="mt-[7px] size-1 shrink-0 rounded-full bg-current" />

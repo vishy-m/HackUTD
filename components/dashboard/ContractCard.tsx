@@ -1,6 +1,8 @@
 "use client";
 
+import { spring, transition as motionTransition, useShouldReduceMotion, useTempoTransition } from "@animate-ui/react/utils/motion";
 import clsx from "clsx";
+import { motion } from "motion/react";
 import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Chip } from "@/components/ui/Chip";
 import { Panel } from "@/components/ui/Panel";
@@ -99,6 +101,8 @@ export function ContractCard({ data }: { data?: DashboardData }) {
 
 /** Allowance bar: solid = driven so far, hatched = projected to lease end, tick = allowance. */
 function MileageBar({ used, now, allowance }: { used: number; now: number; allowance: number }) {
+  const reduced = useShouldReduceMotion();
+  const number = useTempoTransition(spring.number);
   const max = Math.max(used, allowance) * 1.04;
   const pctNow = (now / max) * 100;
   const pctProj = (used / max) * 100;
@@ -106,17 +110,26 @@ function MileageBar({ used, now, allowance }: { used: number; now: number; allow
   const over = used > allowance;
   return (
     <div className="relative mt-3 h-3 w-full rounded-full bg-line" role="img" aria-label={`${Math.round(now).toLocaleString()} miles driven, ${Math.round(used).toLocaleString()} projected, ${allowance.toLocaleString()} allowed`}>
-      <div
-        className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500"
-        style={{
-          width: `${pctProj}%`,
-          background: over
-            ? "repeating-linear-gradient(135deg, var(--warn) 0 4px, transparent 4px 8px)"
-            : "repeating-linear-gradient(135deg, var(--ink-3) 0 4px, transparent 4px 8px)",
-          opacity: 0.7,
-        }}
-      />
-      <div className="absolute inset-y-0 left-0 rounded-full bg-ink transition-[width] duration-500" style={{ width: `${pctNow}%` }} />
+      <div className="absolute inset-0 overflow-hidden rounded-full">
+        <motion.div
+          className="absolute inset-0 rounded-full"
+          initial={false}
+          animate={{ transform: `translateX(-${100 - pctProj}%)` }}
+          transition={reduced ? motionTransition.instant : number}
+          style={{
+            background: over
+              ? "repeating-linear-gradient(135deg, var(--warn) 0 4px, transparent 4px 8px)"
+              : "repeating-linear-gradient(135deg, var(--ink-3) 0 4px, transparent 4px 8px)",
+            opacity: 0.7,
+          }}
+        />
+        <motion.div
+          className="absolute inset-0 rounded-full bg-ink"
+          initial={false}
+          animate={{ transform: `translateX(-${100 - pctNow}%)` }}
+          transition={reduced ? motionTransition.instant : number}
+        />
+      </div>
       <div className="absolute -top-1.5 -bottom-1.5 w-0.5 rounded bg-ink-2" style={{ left: `${pctAllow}%` }} aria-hidden />
     </div>
   );

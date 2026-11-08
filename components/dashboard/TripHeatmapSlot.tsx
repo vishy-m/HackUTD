@@ -99,7 +99,7 @@ function Constellation({ destinations, city }: { destinations: DrivingSummary["t
               {d.label.replace(new RegExp(`^${city}\\s+`), "")}
             </text>
             <text x={p.x + (right ? 14 : -14)} y={p.y + 15} textAnchor={right ? "start" : "end"} fill="var(--ink-3)" fontSize="11">
-              {d.trips} {d.trips === 1 ? "trip" : "trips"} · {Math.round(p.mi)} mi
+              {d.trips} {d.trips === 1 ? "trip" : "trips"}, {Math.round(p.mi)} mi
             </text>
           </g>
         );
@@ -108,7 +108,7 @@ function Constellation({ destinations, city }: { destinations: DrivingSummary["t
       <circle cx={cx} cy={cy} r={7} fill="var(--accent)" />
       <text x={cx} y={cy + 32} textAnchor="middle" fill="var(--ink-2)" fontSize="12" fontWeight={500}>
         {city}
-        {homeTrips ? ` · ${homeTrips} trips` : ""}
+        {homeTrips ? `, ${homeTrips} trips` : ""}
       </text>
     </svg>
   );
