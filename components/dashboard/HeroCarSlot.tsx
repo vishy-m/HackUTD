@@ -12,7 +12,7 @@ function Loading({ vehicle }: { vehicle?: Vehicle }) {
   return (
     <div className="grid h-full w-full place-items-center">
       <div className="w-[80%] max-w-[520px] opacity-80">
-        {vehicle ? <CarSilhouette bodyStyle={vehicle.bodyStyle} paint={vehicle.paintHex} className="h-auto w-full" /> : <div className="skeleton h-24 w-full rounded-[40px]" />}
+        {vehicle ? <CarSilhouette bodyStyle={vehicle.bodyStyle} paint={vehicle.paintHex} className="h-auto w-full" /> : <div className="skeleton h-24 w-full rounded-lg" />}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Building2, Check, ChevronLeft, ChevronRight, FileUp, Landmark, MapPin, PiggyBank, RotateCcw, ShieldCheck, Sparkles, Wrench } from "lucide-react";
+import { Building2, Check, ChevronLeft, ChevronRight, FileUp, Landmark, MapPin, PiggyBank, RotateCcw, ShieldCheck, Wrench } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -14,7 +14,7 @@ type FormState = RepairAdvisorInput & { city: string; shopName: string; quoteFil
 
 const steps = ["Problem", "Estimate", "Finances", "Plan"];
 const money = (value: number) => `$${Math.round(value).toLocaleString()}`;
-const field = "mt-1.5 h-11 w-full rounded-xl border border-line-2 bg-[var(--glass-hi)] px-3 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-[var(--focus)]";
+const field = "mt-1.5 h-11 w-full rounded-lg border border-line-2 bg-[var(--glass-hi)] px-3 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-[var(--focus)]";
 const label = "block text-[13px] font-medium text-ink-2";
 
 const shopsByCity: Record<string, { name: string; detail: string }[]> = {
@@ -55,7 +55,7 @@ function Progress({ step }: { step: Step }) {
     <ol className="grid grid-cols-4 gap-1" aria-label="Repair decision progress">
       {steps.map((name, index) => (
         <li key={name} className="min-w-0">
-          <div className={clsx("h-1 rounded-full", index <= step ? "bg-accent" : "bg-line-2")} />
+          <div className={clsx("h-1 rounded-full", index <= step ? "bg-ink" : "bg-line-2")} />
           <span className={clsx("mt-2 block truncate text-[11px] sm:text-xs", index === step ? "font-semibold text-ink" : "text-ink-3")}>
             {name}
           </span>
@@ -68,8 +68,8 @@ function Progress({ step }: { step: Step }) {
 function StepHeader({ eyebrow, title, hint }: { eyebrow: string; title: string; hint: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold tracking-[0.14em] text-accent-ink uppercase">{eyebrow}</p>
-      <h2 className="font-display mt-2 text-2xl font-semibold text-ink sm:text-3xl">{title}</h2>
+      <p className="text-[13px] font-medium text-ink-3">{eyebrow}</p>
+      <h2 className="font-display mt-1 text-2xl text-ink sm:text-[28px]">{title}</h2>
       <p className="mt-2 text-sm text-ink-2">{hint}</p>
     </div>
   );
@@ -104,7 +104,7 @@ function VehicleProblem({ form, update }: { form: FormState; update: (patch: Par
           <input type="number" min="0" max="500000" value={form.vehicle.mileage} onChange={(event) => update({ vehicle: { ...form.vehicle, mileage: Number(event.target.value) } })} className={field} />
         </label>
       </div>
-      <div className="rounded-2xl border border-line bg-[var(--glass-hi)] p-4 text-sm text-ink-2">
+      <div className="rounded-lg border border-line bg-[var(--glass-hi)] p-4 text-sm text-ink-2">
         <div className="flex items-center gap-2 font-medium text-ink"><ShieldCheck size={16} /> Your details stay in this browser</div>
         <p className="mt-1.5">We use them only to build this estimate.</p>
       </div>
@@ -120,14 +120,14 @@ function EstimateStep({ form, update }: { form: FormState; update: (patch: Parti
     <div className="space-y-6">
       <StepHeader eyebrow="Step 2 of 4" title={estimate.needsInspection ? "Start with an inspection" : "Your repair estimate"} hint="Use our range or enter a written shop quote." />
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-line bg-[var(--glass-hi)] p-5">
+        <div className="rounded-lg border border-line bg-[var(--glass-hi)] p-5">
           <div className="flex items-center gap-2 text-sm text-ink-2"><Wrench size={16} /> {estimate.label}</div>
           <div className="num mt-3 text-3xl font-semibold text-ink">
             {estimate.low === estimate.high ? money(estimate.estimate) : `${money(estimate.low)}–${money(estimate.high)}`}
           </div>
           <p className="mt-2 text-xs text-ink-3">{estimate.source === "shop quote" ? "Your shop quote" : "Parts and labor estimate"}</p>
         </div>
-        <div className="rounded-2xl border border-line bg-[var(--glass-hi)] p-5">
+        <div className="rounded-lg border border-line bg-[var(--glass-hi)] p-5">
           <div className="text-sm text-ink-2">Estimated private-sale value</div>
           <div className="num mt-3 text-3xl font-semibold text-ink">{money(analyzeRepairDecision(form).privateSaleValue)}</div>
           <p className="mt-2 text-xs text-ink-3">Model, age, and mileage adjusted</p>
@@ -155,15 +155,15 @@ function EstimateStep({ form, update }: { form: FormState; update: (patch: Parti
 
       <div>
         <div className="flex items-end justify-between gap-3">
-          <div><h3 className="text-sm font-semibold text-ink">Nearby places to start</h3><p className="mt-1 text-xs text-ink-3">Demo listings—confirm pricing and availability.</p></div>
-          <select value={form.city} onChange={(event) => update({ city: event.target.value })} className="h-9 rounded-xl border border-line-2 bg-[var(--glass-hi)] px-3 text-sm text-ink">
+          <div><h3 className="text-sm font-semibold text-ink">Nearby places to start</h3><p className="mt-1 text-xs text-ink-3">Demo listings. Confirm pricing and availability with the shop.</p></div>
+          <select value={form.city} onChange={(event) => update({ city: event.target.value })} className="h-9 rounded-lg border border-line-2 bg-[var(--glass-hi)] px-3 text-sm text-ink">
             <option>Austin</option><option>Houston</option>
           </select>
         </div>
         <ul className="mt-3 grid gap-2 sm:grid-cols-3">
           {shops.map((shop) => (
             <li key={shop.name}>
-              <button type="button" onClick={() => update({ shopName: shop.name })} className={clsx("h-full w-full rounded-2xl border p-3.5 text-left transition-colors", form.shopName === shop.name ? "border-accent bg-accent-soft" : "border-line hover:border-line-2")}>
+              <button type="button" onClick={() => update({ shopName: shop.name })} className={clsx("h-full w-full rounded-lg border p-3.5 text-left transition-colors", form.shopName === shop.name ? "border-accent bg-accent-soft" : "border-line hover:border-line-2")}>
                 <MapPin size={15} className="text-ink-3" /><span className="mt-2 block text-sm font-medium text-ink">{shop.name}</span><span className="mt-1 block text-xs text-ink-3">{shop.detail}</span>
               </button>
             </li>
@@ -186,8 +186,8 @@ function FinanceStep({ form, update, connected, setConnected }: { form: FormStat
         <label className={label}>Down payment you’d use<input type="number" min="0" value={form.downPayment} onChange={(event) => update({ downPayment: Number(event.target.value) })} className={field} /></label>
         <label className={label}>Credit range<select value={form.credit} onChange={(event) => update({ credit: event.target.value as FormState["credit"] })} className={field}><option value="excellent">Excellent</option><option value="good">Good</option><option value="fair">Fair</option><option value="building">Building</option></select></label>
       </div>
-      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-[var(--glass-hi)] p-4 sm:flex-row sm:items-center">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-bg"><Landmark size={18} /></span>
+      <div className="flex flex-col gap-3 rounded-lg border border-line bg-[var(--glass-hi)] p-4 sm:flex-row sm:items-center">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-ink text-bg"><Landmark size={18} /></span>
         <div className="min-w-0 flex-1"><div className="text-sm font-medium text-ink">{connected ? "Cash-flow summary connected" : "Use the selected profile’s cash flow"}</div><p className="mt-0.5 text-xs text-ink-3">Read-only demo data. You can edit every number above.</p></div>
         <Button variant={connected ? "solid" : "outline"} onClick={() => setConnected(!connected)}>{connected ? <><Check size={15} />Connected</> : "Connect"}</Button>
       </div>
@@ -201,14 +201,14 @@ function DealerSheet({ open, onClose, form, path }: { open: boolean; onClose: ()
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <section role="dialog" aria-modal="true" aria-labelledby="dealer-title" className="glass-strong w-full max-w-lg rounded-[26px] p-6">
-        <p className="text-xs font-semibold tracking-[0.14em] text-accent-ink uppercase">Prepared request</p>
-        <h2 id="dealer-title" className="font-display mt-2 text-2xl font-semibold text-ink">Contact a Toyota specialist</h2>
-        <div className="mt-5 flex gap-2">{["Email", "Text", "Phone"].map((item) => <button key={item} onClick={() => setChannel(item)} className={clsx("h-9 rounded-xl border px-3 text-sm", channel === item ? "border-ink bg-ink text-bg" : "border-line-2 text-ink-2")}>{item}</button>)}</div>
-        <div className="mt-4 rounded-2xl border border-line bg-[var(--glass-hi)] p-4 text-sm leading-relaxed text-ink-2">
+      <section role="dialog" aria-modal="true" aria-labelledby="dealer-title" className="glass-strong w-full max-w-lg rounded-xl p-6">
+        <p className="text-[13px] font-medium text-ink-3">Prepared request</p>
+        <h2 id="dealer-title" className="font-display mt-1 text-2xl text-ink">Contact a Toyota specialist</h2>
+        <div className="mt-5 flex gap-2">{["Email", "Text", "Phone"].map((item) => <button key={item} onClick={() => setChannel(item)} className={clsx("h-9 rounded-lg border px-3 text-sm", channel === item ? "border-ink bg-ink text-bg" : "border-line-2 text-ink-2")}>{item}</button>)}</div>
+        <div className="mt-4 rounded-lg border border-line bg-[var(--glass-hi)] p-4 text-sm leading-relaxed text-ink-2">
           I’d like help with my {form.vehicle.year} Toyota {form.vehicle.model}. I’m comparing {path === "keep" ? "a repair appointment" : path === "trade" ? "a trade-in and replacement" : "refinancing options"}. Please provide the next available appointment and a written estimate.
         </div>
-        <p className="mt-3 text-xs text-ink-3">Preview only—no message or call will be sent.</p>
+        <p className="mt-3 text-xs text-ink-3">Preview only. No message or call will be sent.</p>
         <div className="mt-6 flex justify-end"><Button variant="solid" onClick={onClose}>Done</Button></div>
       </section>
     </div>
@@ -224,12 +224,12 @@ function PlanStep({ form }: { form: FormState }) {
     <div className="space-y-6">
       <StepHeader eyebrow="Your plan" title={recommended.title} hint={recommended.summary} />
       <div className="grid gap-3 sm:grid-cols-[0.8fr_1.2fr]">
-        <div className="glow-accent rounded-2xl border border-accent bg-accent-soft p-5">
+        <div className="rounded-lg border border-accent bg-accent-soft p-5">
           <div className="text-sm font-medium text-accent-ink">Repair-to-trade signal</div>
           <div className="num mt-3 text-5xl font-semibold text-ink">{result.score}<span className="text-lg text-ink-3">/100</span></div>
           <p className="mt-2 text-xs text-ink-2">Higher means replacing deserves a closer look.</p>
         </div>
-        <ul className="rounded-2xl border border-line p-5">
+        <ul className="rounded-lg border border-line p-5">
           {result.reasons.map((reason) => <li key={reason} className="flex gap-2.5 py-1.5 text-sm text-ink-2"><Check size={15} className="mt-0.5 shrink-0 text-good" />{reason}</li>)}
         </ul>
       </div>
@@ -237,7 +237,7 @@ function PlanStep({ form }: { form: FormState }) {
         <h3 className="text-sm font-semibold text-ink">Compare all paths</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {result.options.map((option) => (
-            <article key={option.path} className={clsx("rounded-2xl border p-4", option.path === result.recommendation ? "border-accent bg-accent-soft" : "border-line", !option.eligible && "opacity-60")}>
+            <article key={option.path} className={clsx("rounded-lg border p-4", option.path === result.recommendation ? "border-accent bg-accent-soft" : "border-line", !option.eligible && "opacity-60")}>
               <div className="flex items-center justify-between gap-2"><h4 className="text-sm font-semibold text-ink">{option.title}</h4>{option.path === result.recommendation && <Chip tone="accent">Best fit</Chip>}</div>
               <div className="num mt-4 text-3xl font-semibold text-ink">{money(option.monthly)}<span className="text-xs text-ink-3">/mo</span></div>
               <p className="mt-2 text-xs leading-relaxed text-ink-2">{option.summary}</p>
@@ -246,7 +246,7 @@ function PlanStep({ form }: { form: FormState }) {
         </div>
       </div>
       {result.replacements.length > 0 && (
-        <div><h3 className="text-sm font-semibold text-ink">Affordable replacements</h3><div className="mt-3 grid gap-2 sm:grid-cols-3">{result.replacements.map((car) => <div key={car.name} className="rounded-2xl border border-line p-4"><Building2 size={16} className="text-ink-3" /><div className="mt-3 text-sm font-medium text-ink">{car.name}</div><div className="num mt-1 text-lg font-semibold text-ink">{money(car.monthly)}/mo</div><div className="mt-1 text-xs text-ink-3">{car.fit} · {money(car.price)}</div></div>)}</div></div>
+        <div><h3 className="text-sm font-semibold text-ink">Affordable replacements</h3><div className="mt-3 grid gap-2 sm:grid-cols-3">{result.replacements.map((car) => <div key={car.name} className="rounded-lg border border-line p-4"><Building2 size={16} className="text-ink-3" /><div className="mt-3 text-sm font-medium text-ink">{car.name}</div><div className="num mt-1 text-lg font-semibold text-ink">{money(car.monthly)}/mo</div><div className="mt-1 text-xs text-ink-3">{car.fit} · {money(car.price)}</div></div>)}</div></div>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         <Panel title="Save for the next car" className="!p-4 sm:!p-5">
@@ -270,12 +270,12 @@ export function RepairAdvisor({ data }: { data?: DashboardData }) {
   const reset = () => { setForm(initialState(data)); setStep(0); setConnected(false); };
 
   return (
-    <section aria-labelledby="repair-advisor-title" className="mx-auto w-full max-w-5xl">
-      <div className="mb-5 flex items-start justify-between gap-4 px-1">
-        <div><p className="text-xs font-semibold tracking-[0.16em] text-accent-ink uppercase">Vehicle decision</p><h1 id="repair-advisor-title" className="font-display mt-2 text-3xl font-semibold text-ink sm:text-4xl">Repair or replace?</h1><p className="mt-2 max-w-xl text-sm text-ink-2">A short comparison using your car, repair, and budget.</p></div>
+    <section aria-labelledby="repair-advisor-title" className="w-full">
+      <div className="mb-5 flex items-start justify-between gap-4 border-b border-line pb-5">
+        <div><h1 id="repair-advisor-title" className="font-display text-[28px] leading-tight text-ink sm:text-[32px]">Repair or replace</h1><p className="mt-1.5 max-w-xl text-[15px] text-ink-2">Four steps: the problem, the estimate, your budget, then a plan that compares repairing, trading in and refinancing.</p></div>
         <Button variant="ghost" size="sm" onClick={reset}><RotateCcw size={14} />Start over</Button>
       </div>
-      <div className="glass rounded-[28px] p-5 sm:p-7">
+      <div className="glass max-w-5xl rounded-xl p-5 sm:p-7">
         <Progress step={step} />
         <div className="mt-8 min-h-[430px]">
           {step === 0 && <VehicleProblem form={form} update={update} />}
@@ -285,7 +285,7 @@ export function RepairAdvisor({ data }: { data?: DashboardData }) {
         </div>
         <div className="mt-8 flex items-center justify-between border-t border-line pt-5">
           <Button variant="ghost" disabled={step === 0} onClick={() => setStep((step - 1) as Step)}><ChevronLeft size={16} />Back</Button>
-          {step < 3 ? <Button variant="primary" disabled={!canContinue} onClick={() => setStep((step + 1) as Step)}>{step === 2 ? <><Sparkles size={16} />See my plan</> : <>Continue<ChevronRight size={16} /></>}</Button> : <Button variant="solid" onClick={() => setStep(0)}>Review details</Button>}
+          {step < 3 ? <Button variant="primary" disabled={!canContinue} onClick={() => setStep((step + 1) as Step)}>{step === 2 ? <>See my plan<ChevronRight size={16} /></> : <>Continue<ChevronRight size={16} /></>}</Button> : <Button variant="solid" onClick={() => setStep(0)}>Review details</Button>}
         </div>
       </div>
     </section>

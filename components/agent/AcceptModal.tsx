@@ -43,10 +43,10 @@ export function AcceptModal({ data }: { data?: DashboardData }) {
       {o && phase.kind !== "done" && (
         <div>
           <p className="text-sm text-ink-3">Confirm your move</p>
-          <h2 id="accept-title" className="font-display mt-1 text-2xl font-semibold text-ink">
+          <h2 id="accept-title" className="font-display mt-1 text-2xl text-ink">
             {o.title}
           </h2>
-          <dl className="mt-5 space-y-3 rounded-2xl border border-line p-4 text-sm">
+          <dl className="mt-5 space-y-3 rounded-lg border border-line p-4 text-sm">
             <div>
               <dt className="text-xs text-ink-3">What happens</dt>
               <dd className="mt-0.5 text-ink">{o.summary}</dd>
@@ -112,7 +112,7 @@ export function AcceptModal({ data }: { data?: DashboardData }) {
           >
             <Check size={30} strokeWidth={3} />
           </motion.div>
-          <h2 id="accept-title" className="font-display mt-5 text-2xl font-semibold text-ink">
+          <h2 id="accept-title" className="font-display mt-5 text-2xl text-ink">
             {phase.mode === "specialist-callback" ? "A specialist will call you" : "You're all set"}
           </h2>
           <p className="mx-auto mt-2 max-w-[36ch] text-sm text-ink-2">
@@ -132,7 +132,7 @@ export function AcceptModal({ data }: { data?: DashboardData }) {
             <Button variant="solid" size="lg" className="flex-1" onClick={() => close(null)} data-autofocus>
               Done
             </Button>
-            <Link href="/tfs" className="inline-flex h-12 flex-1 items-center justify-center rounded-xl border border-line-2 text-[15px] font-medium text-ink hover:bg-[var(--glass-hi)]" onClick={() => close(null)}>
+            <Link href="/tfs" className="inline-flex h-12 flex-1 items-center justify-center rounded-lg border border-line-2 text-[15px] font-medium text-ink hover:bg-[var(--glass-hi)]" onClick={() => close(null)}>
               See it in the TFS view
             </Link>
           </div>

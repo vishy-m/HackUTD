@@ -131,7 +131,7 @@ function LeaseChart({ data, monthlyMiles, monthsAhead }: { data: DashboardData; 
   const overAtFocus = focusOdo - focus.allowance;
   const minY = Math.floor(Math.min(...rows.map((r) => Math.min(r.actual ?? Infinity, r.allowance))) / 1000) * 1000;
   return (
-    <div className="rounded-2xl border border-line p-4">
+    <div className="rounded-lg border border-line p-4">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
         <div className="text-sm text-ink-2">
           Odometer in <span className="text-ink">{focus.label.replace(" ", " ’")}</span>
@@ -205,7 +205,7 @@ function OptionCard({ o, recommended, baselineId, accepted }: { o: MoveOption; r
     <motion.article
       layout="position"
       className={clsx(
-        "group relative flex flex-col rounded-[20px] border p-4 transition-colors sm:p-5",
+        "group relative flex flex-col rounded-xl border p-4 transition-colors sm:p-5",
         recommended ? "glow-accent border-transparent bg-[var(--glass)]" : "border-line bg-[var(--glass-hi)] hover:border-line-2",
         !o.eligible && "opacity-60",
       )}
@@ -326,7 +326,7 @@ export function MoveDrawer({ data }: { data?: DashboardData }) {
         <div className="space-y-6">
           {/* What-if */}
           {move !== "protection" && (
-            <section aria-labelledby="whatif-h" className="rounded-[20px] border border-line p-4 sm:p-5">
+            <section aria-labelledby="whatif-h" className="rounded-xl border border-line p-4 sm:p-5">
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h3 id="whatif-h" className="flex items-center gap-2 text-sm font-semibold text-ink">
                   What if…

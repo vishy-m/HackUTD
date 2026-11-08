@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Check, ChevronDown, FileText, MessageSquareText, PhoneCall, Sparkles, X } from "lucide-react";
+import { Bell, Check, ChevronDown, FileText, MessageSquareText, PhoneCall, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Drawer } from "@/components/ui/Overlay";
@@ -27,7 +27,7 @@ function SectionTitle({ children, count }: { children: React.ReactNode; count?: 
 const draftIcon: Record<Draft["type"], typeof FileText> = {
   comparison: FileText,
   message: MessageSquareText,
-  reminder: Sparkles,
+  reminder: Bell,
   plan: FileText,
 };
 
@@ -35,12 +35,12 @@ function DraftItem({ d }: { d: Draft }) {
   const [open, setOpen] = useState(false);
   const Icon = draftIcon[d.type];
   return (
-    <li className="rounded-2xl border border-line">
+    <li className="rounded-lg border border-line">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2.5 rounded-2xl px-3.5 py-2.5 text-left hover:bg-[var(--glass-hi)]"
+        className="flex w-full items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-left hover:bg-[var(--glass-hi)]"
       >
         <Icon size={15} className="shrink-0 text-ink-3" />
         <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{d.title}</span>
@@ -88,15 +88,15 @@ function PanelBody({ data }: { data?: DashboardData }) {
     <div className="space-y-7">
         <section aria-labelledby="sec-next">
           <SectionTitle>
-            <span id="sec-next">Your next move</span>
+            <span id="sec-next">Recommendations</span>
           </SectionTitle>
           {!agent ? (
             <div className="space-y-3" aria-busy>
-              <Skeleton className="h-[148px] rounded-[20px]" />
-              <Skeleton className="h-[120px] rounded-[20px]" />
+              <Skeleton className="h-[148px] rounded-xl" />
+              <Skeleton className="h-[120px] rounded-xl" />
             </div>
           ) : recs.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-line-2 p-4 text-[13px] text-ink-2">
+            <p className="rounded-lg border border-dashed border-line-2 p-4 text-[13px] text-ink-2">
               No open recommendations. Ask a what-if below and I&apos;ll draft new ones.
             </p>
           ) : (
@@ -119,7 +119,7 @@ function PanelBody({ data }: { data?: DashboardData }) {
             </SectionTitle>
             <ul className="space-y-2">
               {steps.map((s) => (
-                <li key={s.id} className="flex items-center gap-3 rounded-2xl bg-good-soft px-3.5 py-2.5">
+                <li key={s.id} className="flex items-center gap-3 rounded-lg bg-good-soft px-3.5 py-2.5">
                   <span className="grid size-6 shrink-0 place-items-center rounded-full bg-good text-bg">
                     {s.mode === "specialist-callback" ? <PhoneCall size={12} /> : <Check size={13} strokeWidth={3} />}
                   </span>
@@ -162,7 +162,7 @@ function PanelBody({ data }: { data?: DashboardData }) {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
-                      className="inline-flex min-h-8 max-w-full items-center gap-1 rounded-2xl border border-line bg-[var(--glass-hi)] py-1 pr-1 pl-3 text-[13px] leading-snug text-ink"
+                      className="inline-flex min-h-8 max-w-full items-center gap-1 rounded-lg border border-line bg-[var(--glass-hi)] py-1 pr-1 pl-3 text-[13px] leading-snug text-ink"
                       title={`From ${l.source} · ${Math.round(l.confidence * 100)}% confident`}
                     >
                       {l.statement}
@@ -199,16 +199,16 @@ function PanelHeader({ data, onClose }: { data?: DashboardData; onClose?: () => 
   const streaming = useDataStore((s) => s.streaming);
   return (
     <div className="flex items-center gap-3">
-      <span className="relative grid size-9 place-items-center rounded-xl bg-ink text-bg">
-        <Sparkles size={17} />
+      <span className="relative grid size-9 place-items-center rounded-lg bg-ink text-bg">
+        <MessageSquareText size={17} />
         {streaming && <span className="absolute -top-0.5 -right-0.5 size-2.5 animate-pulse rounded-full bg-accent ring-2 ring-[var(--bg)]" />}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="font-display text-[16px] font-semibold text-ink">Copilot</div>
-        <div className="truncate text-xs text-ink-3">{data ? `Drafted for ${data.persona.name} · every number from the engines` : "Getting ready…"}</div>
+        <div className="font-display text-[17px] text-ink">Copilot</div>
+        <div className="truncate text-xs text-ink-3">{data ? `For ${data.persona.name} · figures from your contract and trips` : "Loading…"}</div>
       </div>
       {onClose && (
-        <button type="button" onClick={onClose} aria-label="Hide copilot" className="grid size-9 place-items-center rounded-xl text-ink-3 hover:bg-[var(--glass-hi)] hover:text-ink">
+        <button type="button" onClick={onClose} aria-label="Hide copilot" className="grid size-9 place-items-center rounded-lg text-ink-3 hover:bg-[var(--glass-hi)] hover:text-ink">
           <X size={16} />
         </button>
       )}
@@ -240,15 +240,15 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 80, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              className="glass-strong fixed bottom-4 left-1/2 z-40 flex h-14 -translate-x-1/2 items-center gap-3 rounded-full py-2 pr-5 pl-2 shadow-2xl"
+              className="glass-strong fixed bottom-4 left-1/2 z-40 flex h-14 -translate-x-1/2 items-center gap-3 rounded-lg py-2 pr-5 pl-2"
               aria-label="Open copilot"
             >
-              <span className="grid size-10 place-items-center rounded-full bg-ink text-bg">
-                <Sparkles size={18} />
+              <span className="grid size-10 place-items-center rounded-md bg-ink text-bg">
+                <MessageSquareText size={18} />
               </span>
               <span className="text-left">
                 <span className="block text-sm font-semibold text-ink">Copilot</span>
-                <span className="block text-xs text-ink-3">{recCount ? `${recCount} moves drafted` : "Ask anything"}</span>
+                <span className="block text-xs text-ink-3">{recCount ? `${recCount} recommendations` : "Ask about your car or contract"}</span>
               </span>
             </motion.button>
           )}
@@ -267,10 +267,10 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Show copilot panel"
-          className="glass flex w-16 flex-col items-center gap-3 rounded-[22px] py-4 text-ink-2 hover:text-ink"
+          className="glass flex w-16 flex-col items-center gap-3 rounded-xl py-4 text-ink-2 hover:text-ink"
         >
-          <span className="grid size-9 place-items-center rounded-xl bg-ink text-bg">
-            <Sparkles size={17} />
+          <span className="grid size-9 place-items-center rounded-lg bg-ink text-bg">
+            <MessageSquareText size={17} />
           </span>
           {recCount > 0 && <span className="num text-xs font-semibold">{recCount}</span>}
         </button>
@@ -279,7 +279,7 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
   }
 
   return (
-    <aside aria-label="Copilot" className="glass sticky top-[132px] flex h-[calc(100dvh-148px)] min-h-[520px] flex-col overflow-hidden rounded-[26px] xl:top-[88px] xl:h-[calc(100dvh-104px)]">
+    <aside aria-label="Copilot" className="glass sticky top-[132px] flex h-[calc(100dvh-148px)] min-h-[520px] flex-col overflow-hidden rounded-xl xl:top-[88px] xl:h-[calc(100dvh-104px)]">
       <div className="border-b border-line px-5 py-4">
         <PanelHeader data={data} onClose={() => setOpen(false)} />
       </div>

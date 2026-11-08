@@ -86,7 +86,7 @@ export function RideReplaySlot() {
           aria-label={trip ? `Trip replay: ${trip.destinationLabel}` : "Trip replay"}
         >
           <motion.div
-            className="glass-strong relative h-full w-full overflow-hidden sm:rounded-[26px]"
+            className="glass-strong relative h-full w-full overflow-hidden sm:rounded-xl"
             initial={reduced ? false : { scale: 0.97, y: 16 }}
             animate={{ scale: 1, y: 0 }}
             exit={reduced ? undefined : { scale: 0.98, y: 10 }}
@@ -96,7 +96,7 @@ export function RideReplaySlot() {
               <div className="grid h-full place-items-center p-6 text-center">
                 <div>
                   <p className="text-ink">This trip couldn&apos;t be loaded ({error}).</p>
-                  <button ref={closeRef} type="button" onClick={() => openReplay(null)} className="mt-4 rounded-xl border border-line-2 px-4 py-2 text-sm text-ink">
+                  <button ref={closeRef} type="button" onClick={() => openReplay(null)} className="mt-4 rounded-lg border border-line-2 px-4 py-2 text-sm text-ink">
                     Back to dashboard
                   </button>
                 </div>
@@ -111,7 +111,7 @@ export function RideReplaySlot() {
                 type="button"
                 onClick={() => openReplay(null)}
                 aria-label="Close replay"
-                className="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-xl text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
+                className="absolute top-3 right-3 inline-flex size-10 items-center justify-center rounded-lg text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
               >
                 <X size={18} />
               </button>

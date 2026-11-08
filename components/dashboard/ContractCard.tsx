@@ -23,7 +23,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 export function ContractCard({ data }: { data?: DashboardData }) {
   const whatIfMiles = useUiStore((s) => s.whatIf.monthlyMiles);
-  if (!data) return <Skeleton className="h-[260px] rounded-[22px]" />;
+  if (!data) return <Skeleton className="h-[260px] rounded-xl" />;
   const c = data.persona.contract;
   const elapsed = c.termMonths - c.monthsRemaining;
   const lease = leaseFacts(data, whatIfMiles);

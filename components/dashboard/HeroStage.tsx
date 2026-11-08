@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import { Eye, EyeOff, Info } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -49,7 +48,7 @@ export function HeroStage({ data }: { data?: DashboardData }) {
 
   if (!data) {
     return (
-      <section aria-busy className="glass grid min-h-[420px] grid-cols-1 gap-6 overflow-hidden rounded-[28px] p-6 xl:grid-cols-[1.3fr_1fr]">
+      <section aria-busy className="glass grid min-h-[420px] grid-cols-1 gap-6 overflow-hidden rounded-xl p-6 xl:grid-cols-[1.3fr_1fr]">
         <Skeleton className="h-[260px] w-full rounded-3xl xl:h-full" />
         <div className="space-y-4 py-4">
           <Skeleton className="h-4 w-28" />
@@ -69,17 +68,12 @@ export function HeroStage({ data }: { data?: DashboardData }) {
   const accepted = opt ? data.preferences.accepted.some((a) => a.optionId === opt.id) : false;
 
   return (
-    <section aria-labelledby="next-move-title" className="glass relative overflow-hidden rounded-[28px]">
+    <section aria-labelledby="next-move-title" className="glass relative overflow-hidden rounded-xl">
       <div className="grid grid-cols-1 xl:grid-cols-[1.55fr_1fr]">
         {/* Stage */}
         <div className="flex min-w-0 flex-col">
-          <div className="relative h-[300px] sm:h-[380px] xl:h-auto xl:min-h-[420px] xl:flex-1">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0"
-              style={{ background: "radial-gradient(60% 55% at 50% 42%, var(--stage-light), transparent 70%)" }}
-            />
-            <HeroCarSlot vehicle={v} upgradePreview={preview ? upgrade : undefined} hotspotLabels={hotspotLabels(data)} className="absolute inset-0" />
+          <div className="relative h-[300px] sm:h-[380px] xl:h-auto xl:min-h-[440px] xl:flex-1">
+            <HeroCarSlot vehicle={v} upgradePreview={preview ? upgrade : undefined} hotspotLabels={hotspotLabels(data)} className="absolute inset-0 [&_.nm-hero]:rounded-none" />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3.5 sm:px-6">
             <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
@@ -110,9 +104,9 @@ export function HeroStage({ data }: { data?: DashboardData }) {
         {/* The answer */}
         <div className="relative flex flex-col justify-center gap-5 border-t border-line p-6 sm:p-7 xl:border-t-0 xl:border-l">
           <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-ink-2">
+            <span className="inline-flex items-center gap-2 text-[13px] font-medium text-accent-ink">
               <span className="size-1.5 rounded-full bg-accent" aria-hidden />
-              Your next move
+              Recommended next move
             </span>
             <AskButton widget="next-move" optionId={opt?.id} label="Ask about this move" />
           </div>
@@ -126,20 +120,20 @@ export function HeroStage({ data }: { data?: DashboardData }) {
                 transition={{ type: "spring", stiffness: 260, damping: 26 }}
                 className="space-y-5"
               >
-                <h1 id="next-move-title" className="font-display text-[clamp(28px,2.7vw,42px)] leading-[1.02] font-semibold text-balance text-ink">
+                <h1 id="next-move-title" className="font-display text-[clamp(26px,2.3vw,34px)] leading-[1.12] text-balance text-ink">
                   {opt.title}
                 </h1>
                 {impact && (
                   <div>
-                    <div className="num flex items-baseline text-[clamp(40px,3.8vw,58px)] leading-none font-semibold text-ink">
+                    <div className="num flex items-baseline text-[clamp(38px,3.4vw,52px)] leading-none font-semibold text-ink">
                       <span className="mr-0.5 text-[0.55em] text-ink-2">$</span>
                       <AnimatedNumber value={impact.value} />
                       {impact.suffix && <span className="ml-1 text-[0.4em] font-medium text-ink-2">{impact.suffix}</span>}
                     </div>
-                    <p className="mt-2 text-sm text-ink-2">{impact.caption}</p>
+                    <p className="mt-2 text-sm text-ink-3">{impact.caption}</p>
                   </div>
                 )}
-                <p className="line-clamp-3 max-w-[46ch] text-sm leading-relaxed text-ink-2">{opt.summary}</p>
+                <p className="line-clamp-3 max-w-[48ch] text-[15px] leading-relaxed text-ink-2">{opt.summary}</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <Chip tone="neutral">{moveLabel[opt.moveType]}</Chip>
                   {opt.deadline && <Chip tone="warn">Decide by {shortDate(opt.deadline)}</Chip>}
@@ -161,7 +155,6 @@ export function HeroStage({ data }: { data?: DashboardData }) {
           </AnimatePresence>
         </div>
       </div>
-      <div className={clsx("pointer-events-none absolute inset-x-0 top-0 h-px", "bg-gradient-to-r from-transparent via-[var(--line-2)] to-transparent")} aria-hidden />
     </section>
   );
 }

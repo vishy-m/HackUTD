@@ -33,7 +33,7 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
 
   if (accepted) {
     return (
-      <motion.div layout className="flex items-center gap-3 rounded-2xl border border-line px-4 py-3">
+      <motion.div layout className="flex items-center gap-3 rounded-lg border border-line px-4 py-3">
         <motion.span layoutId={`accept-${rec.optionId}`} className="grid size-7 place-items-center rounded-full bg-good text-bg">
           <Check size={15} strokeWidth={3} />
         </motion.span>
@@ -48,12 +48,12 @@ export function RecommendationCard({ rec, primary }: { rec: Recommendation; prim
   return (
     <motion.article
       layout
-      className={clsx("relative rounded-[20px] border p-4", primary ? "glow-accent border-transparent bg-[var(--glass)]" : "border-line bg-[var(--glass-hi)]")}
+      className={clsx("relative rounded-xl border p-4", primary ? "glow-accent border-transparent bg-[var(--glass)]" : "border-line bg-[var(--glass)]")}
       aria-label={rec.title}
       data-move={rec.moveType}
     >
       <div className="flex items-start gap-3">
-        <span className={clsx("mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl", primary ? "bg-accent-soft text-accent-ink" : "bg-[var(--glass-hi)] text-ink-2")}>
+        <span className={clsx("mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg", primary ? "bg-accent-soft text-accent-ink" : "border border-line text-ink-2")}>
           <Icon size={16} />
         </span>
         <div className="min-w-0 flex-1">

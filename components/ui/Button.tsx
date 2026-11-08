@@ -13,15 +13,15 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   // Red only for the one action that commits to a move.
-  primary: "bg-accent text-white hover:brightness-110 active:brightness-95 shadow-[0_8px_24px_-10px_rgba(235,10,30,0.7)]",
+  primary: "bg-accent text-white hover:bg-[#d10919] active:bg-[#b80816]",
   solid: "bg-ink text-bg hover:opacity-90 active:opacity-80",
-  outline: "border border-line-2 text-ink hover:bg-[var(--glass-hi)] active:bg-line",
+  outline: "border border-line-2 bg-[var(--glass)] text-ink hover:border-ink-3 active:bg-[var(--glass-hi)]",
   ghost: "text-ink-2 hover:text-ink hover:bg-[var(--glass-hi)]",
 };
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3 text-[13px] gap-1.5 rounded-lg",
-  md: "h-10 px-4 text-sm gap-2 rounded-xl",
-  lg: "h-12 px-5 text-[15px] gap-2 rounded-xl",
+  md: "h-10 px-4 text-sm gap-2 rounded-lg",
+  lg: "h-11 px-5 text-[15px] gap-2 rounded-lg",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -33,7 +33,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={clsx(
-        "inline-flex select-none items-center justify-center font-medium whitespace-nowrap transition-[background,color,filter,opacity,transform] duration-150 disabled:pointer-events-none disabled:opacity-40",
+        "inline-flex select-none items-center justify-center font-medium whitespace-nowrap transition-[background,border-color,color,opacity,transform] duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-40",
         variants[variant],
         sizes[size],
         className,
@@ -55,7 +55,7 @@ export function IconButton({
       aria-label={label}
       title={label}
       className={clsx(
-        "inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink",
+        "inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink",
         className,
       )}
       {...rest}

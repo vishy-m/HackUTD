@@ -85,7 +85,7 @@ export function Drawer({
         {open && (
           <div className="fixed inset-0 z-50">
             <motion.div
-              className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+              className="absolute inset-0 bg-black/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -99,7 +99,7 @@ export function Drawer({
               aria-labelledby={labelledBy}
               className={clsx(
                 "glass-strong absolute flex flex-col",
-                desktop ? "top-3 right-3 bottom-3 rounded-[26px]" : "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-[26px]",
+                desktop ? "top-3 right-3 bottom-3 rounded-xl" : "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-xl",
               )}
               style={desktop ? { width: `min(${width}px, calc(100vw - 24px))` } : undefined}
               initial={desktop ? { x: 40, opacity: 0 } : { y: "100%" }}
@@ -110,7 +110,7 @@ export function Drawer({
               {!desktop && <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line-2" aria-hidden />}
               <header className="flex items-start justify-between gap-4 px-5 pt-4 pb-3 sm:px-7 sm:pt-6">
                 <div className="min-w-0">
-                  <h2 id={labelledBy} className="font-display text-xl font-semibold text-ink sm:text-2xl">
+                  <h2 id={labelledBy} className="font-display text-xl text-ink sm:text-[22px]">
                     {title}
                   </h2>
                   {subtitle && <div className="mt-1 text-sm text-ink-2">{subtitle}</div>}
@@ -119,7 +119,7 @@ export function Drawer({
                   type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
+                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
                 >
                   <X size={18} />
                 </button>
@@ -157,7 +157,7 @@ export function Modal({
         {open && (
           <div className="fixed inset-0 z-[60] grid place-items-end p-3 sm:place-items-center sm:p-6">
             <motion.div
-              className="absolute inset-0 bg-black/55 backdrop-blur-[3px]"
+              className="absolute inset-0 bg-black/50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -169,7 +169,7 @@ export function Modal({
               role="dialog"
               aria-modal="true"
               aria-labelledby={labelledBy}
-              className={clsx("glass-strong relative w-full max-w-[480px] rounded-[26px] p-6 sm:p-7", className)}
+              className={clsx("glass-strong relative w-full max-w-[480px] rounded-xl p-6 sm:p-7", className)}
               initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.97, y: 8 }}

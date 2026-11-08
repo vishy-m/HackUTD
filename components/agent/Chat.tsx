@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowUp, Check, CircleAlert, Loader2, Sparkles, Square, X } from "lucide-react";
+import { ArrowUp, Check, CircleAlert, CornerDownRight, Loader2, Square, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { useDataStore, type ChatMessage } from "@/lib/client/data-store";
@@ -70,12 +70,12 @@ function AgentMessage({ m }: { m: ChatMessage }) {
       ) : null}
       {m.actions.map((a, i) => (
         <div key={i} className="flex items-center gap-2 text-xs text-ink-3">
-          <Sparkles size={12} className="text-accent-ink" />
+          <CornerDownRight size={12} className="text-ink-3" />
           {actionText(a)}
         </div>
       ))}
       {m.drafts.map((d) => (
-        <div key={d.id} className="rounded-2xl border border-line p-3">
+        <div key={d.id} className="rounded-lg border border-line p-3">
           <div className="mb-1 text-xs font-medium text-ink-3">Draft · {d.title}</div>
           <Markdown text={d.body} className="text-[13px] text-ink-2" />
         </div>
@@ -122,7 +122,7 @@ export function ChatThread({ data }: { data?: DashboardData }) {
       {(messages ?? []).map((m) =>
         m.role === "user" ? (
           <div key={m.id} className="flex justify-end">
-            <div className="max-w-[85%] rounded-2xl rounded-br-md bg-ink px-3.5 py-2 text-[14px] text-bg">{m.text}</div>
+            <div className="max-w-[85%] rounded-lg rounded-br-md bg-ink px-3.5 py-2 text-[14px] text-bg">{m.text}</div>
           </div>
         ) : (
           <AgentMessage key={m.id} m={m} />
@@ -204,7 +204,7 @@ export function ChatInput() {
           </span>
         </div>
       )}
-      <div className="flex items-end gap-2 rounded-2xl border border-line-2 bg-[var(--glass-hi)] p-1.5 pl-3.5 focus-within:border-ink-3">
+      <div className="flex items-end gap-2 rounded-lg border border-line-2 bg-[var(--glass-hi)] p-1.5 pl-3.5 focus-within:border-ink-3">
         <label htmlFor="agent-input" className="sr-only">
           Ask the copilot
         </label>
@@ -225,7 +225,7 @@ export function ChatInput() {
           style={{ outline: "none" }}
         />
         {streaming ? (
-          <button type="button" onClick={stop} aria-label="Stop" className="grid size-9 shrink-0 place-items-center rounded-xl bg-line-2 text-ink">
+          <button type="button" onClick={stop} aria-label="Stop" className="grid size-9 shrink-0 place-items-center rounded-lg bg-line-2 text-ink">
             <Square size={13} className="fill-current" />
           </button>
         ) : (
@@ -233,7 +233,7 @@ export function ChatInput() {
             type="submit"
             aria-label="Send"
             disabled={!value.trim()}
-            className={clsx("grid size-9 shrink-0 place-items-center rounded-xl transition-colors", value.trim() ? "bg-ink text-bg" : "bg-line text-ink-3")}
+            className={clsx("grid size-9 shrink-0 place-items-center rounded-lg transition-colors", value.trim() ? "bg-ink text-bg" : "bg-line text-ink-3")}
           >
             <ArrowUp size={16} />
           </button>

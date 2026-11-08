@@ -24,7 +24,7 @@ function ordinal(n: number) {
 export function Limited({ what, source }: { what: string; source: string }) {
   const open = useOverlayStore((s) => s.setConsentOpen);
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-dashed border-line-2 p-4 text-sm">
+    <div className="flex items-start gap-3 rounded-lg border border-dashed border-line-2 p-4 text-sm">
       <Lock size={16} className="mt-0.5 shrink-0 text-warn" />
       <div>
         <p className="font-medium text-ink">Limited: {source} off</p>
@@ -55,7 +55,7 @@ function PaymentMarks({ late }: { late: number }) {
 }
 
 export function MoneyCard({ data }: { data?: DashboardData }) {
-  if (!data) return <Skeleton className="h-[260px] rounded-[22px]" />;
+  if (!data) return <Skeleton className="h-[260px] rounded-xl" />;
   const { persona, cashflow } = data;
   const late = cashflow?.latePaymentsLast12 ?? 0;
   const ins = persona.insurance;
@@ -63,7 +63,7 @@ export function MoneyCard({ data }: { data?: DashboardData }) {
   const dueMismatch = cashflow && cashflow.payday === "biweekly-fri" && cashflow.paymentDueDay < 8;
 
   return (
-    <Panel id="w-money" title="Money" aside={<AskButton widget="money" />}>
+    <Panel id="w-money" title="Payments and insurance" aside={<AskButton widget="money" />}>
       <div className="space-y-6">
         <div>
           <div className="mb-2.5 flex items-baseline justify-between text-sm">

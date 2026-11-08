@@ -1,79 +1,83 @@
 @import "tailwindcss";
 
-/* Next Move Copilot design tokens.
-   Dark "showroom" by default: cool graphite, glass panels, platinum type.
-   Toyota red is reserved for the single recommended move + primary action. */
+/* Next Move design tokens.
+   Flat, solid surfaces with hairline borders. One type family (Funnel Sans / Funnel Display).
+   Toyota red is reserved for the single recommended move and its primary action.
+   Light is the base; dark follows the system or the saved choice. */
 
 :root {
-  --bg: #07090d;
-  --bg-2: #0d1117;
-  --stage-light: rgba(150, 170, 200, 0.13);
-  --glass: rgba(20, 25, 33, 0.62);
-  --glass-strong: rgba(19, 23, 30, 0.97);
-  --glass-hi: rgba(255, 255, 255, 0.045);
-  --line: rgba(255, 255, 255, 0.075);
-  --line-2: rgba(255, 255, 255, 0.14);
-  --ink: #eef1f5;
-  --ink-2: #a7afbc;
-  --ink-3: #6f7886;
+  --bg: #f4f4f2;
+  --bg-2: #f4f4f2;
+  --stage-light: rgba(17, 18, 20, 0.035);
+  --glass: #ffffff;
+  --glass-strong: #ffffff;
+  --glass-hi: rgba(17, 18, 20, 0.04);
+  --line: rgba(17, 18, 20, 0.09);
+  --line-2: rgba(17, 18, 20, 0.17);
+  --ink: #111214;
+  --ink-2: #4a4e56;
+  --ink-3: #6a6f78;
   --accent: #eb0a1e;
-  --accent-ink: #ff5360;
-  --accent-soft: rgba(235, 10, 30, 0.14);
-  --good: #5fd3a2;
-  --good-soft: rgba(95, 211, 162, 0.12);
-  --warn: #f2b84b;
-  --warn-soft: rgba(242, 184, 75, 0.13);
-  --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 60px -28px rgba(0, 0, 0, 0.8);
-  --focus: #9cc2ff;
-  color-scheme: dark;
-}
-
-:root[data-theme="light"] {
-  --bg: #eceff3;
-  --bg-2: #f6f7f9;
-  --stage-light: rgba(255, 255, 255, 0.9);
-  --glass: rgba(255, 255, 255, 0.66);
-  --glass-strong: rgba(250, 251, 252, 0.97);
-  --glass-hi: rgba(255, 255, 255, 0.7);
-  --line: rgba(14, 20, 30, 0.08);
-  --line-2: rgba(14, 20, 30, 0.16);
-  --ink: #0d1117;
-  --ink-2: #4a5361;
-  --ink-3: #7c8594;
-  --accent: #eb0a1e;
-  --accent-ink: #c8081a;
-  --accent-soft: rgba(235, 10, 30, 0.08);
-  --good: #0f8a5f;
-  --good-soft: rgba(15, 138, 95, 0.1);
-  --warn: #a86a00;
-  --warn-soft: rgba(168, 106, 0, 0.1);
-  --shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 40px -24px rgba(20, 30, 50, 0.28);
+  --accent-ink: #c4081a;
+  --accent-soft: rgba(235, 10, 30, 0.07);
+  --good: #0d7f56;
+  --good-soft: rgba(13, 127, 86, 0.09);
+  --warn: #9a5f00;
+  --warn-soft: rgba(154, 95, 0, 0.09);
+  --shadow: 0 1px 2px rgba(17, 18, 20, 0.04);
+  --shadow-pop: 0 1px 2px rgba(17, 18, 20, 0.06), 0 16px 40px -12px rgba(17, 18, 20, 0.18);
   --focus: #1f5fd1;
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #eceff3;
-    --bg-2: #f6f7f9;
-    --stage-light: rgba(255, 255, 255, 0.9);
-    --glass: rgba(255, 255, 255, 0.66);
-    --glass-strong: rgba(250, 251, 252, 0.97);
-    --glass-hi: rgba(255, 255, 255, 0.7);
-    --line: rgba(14, 20, 30, 0.08);
-    --line-2: rgba(14, 20, 30, 0.16);
-    --ink: #0d1117;
-    --ink-2: #4a5361;
-    --ink-3: #7c8594;
-    --accent-ink: #c8081a;
-    --accent-soft: rgba(235, 10, 30, 0.08);
-    --good: #0f8a5f;
-    --good-soft: rgba(15, 138, 95, 0.1);
-    --warn: #a86a00;
-    --warn-soft: rgba(168, 106, 0, 0.1);
-    --shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 40px -24px rgba(20, 30, 50, 0.28);
-    --focus: #1f5fd1;
-    color-scheme: light;
+:root[data-theme="dark"] {
+  --bg: #0c0d0f;
+  --bg-2: #0c0d0f;
+  --stage-light: rgba(255, 255, 255, 0.045);
+  --glass: #141619;
+  --glass-strong: #17191c;
+  --glass-hi: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.15);
+  --ink: #ededee;
+  --ink-2: #a5a9b0;
+  --ink-3: #80858e;
+  --accent: #eb0a1e;
+  --accent-ink: #ff5a66;
+  --accent-soft: rgba(235, 10, 30, 0.12);
+  --good: #4cc790;
+  --good-soft: rgba(76, 199, 144, 0.11);
+  --warn: #e9b04a;
+  --warn-soft: rgba(233, 176, 74, 0.11);
+  --shadow: none;
+  --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 56px -16px rgba(0, 0, 0, 0.7);
+  --focus: #8fb8ff;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c0d0f;
+    --bg-2: #0c0d0f;
+    --stage-light: rgba(255, 255, 255, 0.045);
+    --glass: #141619;
+    --glass-strong: #17191c;
+    --glass-hi: rgba(255, 255, 255, 0.045);
+    --line: rgba(255, 255, 255, 0.08);
+    --line-2: rgba(255, 255, 255, 0.15);
+    --ink: #ededee;
+    --ink-2: #a5a9b0;
+    --ink-3: #80858e;
+    --accent-ink: #ff5a66;
+    --accent-soft: rgba(235, 10, 30, 0.12);
+    --good: #4cc790;
+    --good-soft: rgba(76, 199, 144, 0.11);
+    --warn: #e9b04a;
+    --warn-soft: rgba(233, 176, 74, 0.11);
+    --shadow: none;
+    --shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 24px 56px -16px rgba(0, 0, 0, 0.7);
+    --focus: #8fb8ff;
+    color-scheme: dark;
   }
 }
 
@@ -94,7 +98,8 @@
   --color-good-soft: var(--good-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
-  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-code), ui-monospace, monospace;
 }
 
 html {
@@ -102,61 +107,54 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(1200px 520px at 38% -120px, var(--stage-light), transparent 70%),
-    linear-gradient(180deg, var(--bg-2), var(--bg) 640px);
-  background-color: var(--bg);
-  background-repeat: no-repeat;
+  background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-  font-feature-settings: "ss01", "cv11";
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   min-height: 100dvh;
 }
 
-/* Display face: Saira on its wide axis reads like an instrument cluster. */
+/* Headings: Funnel Display at a medium weight, tight tracking, sentence case. */
 .font-display {
-  font-family: var(--font-saira), var(--font-hanken), sans-serif;
-  font-stretch: 112%;
+  font-family: var(--font-display), var(--font-ui), sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+}
+/* Figures: the UI face with tabular digits so columns line up. */
+.num {
+  font-family: var(--font-ui), sans-serif;
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
-.num {
-  font-family: var(--font-saira), var(--font-hanken), sans-serif;
-  font-variant-numeric: tabular-nums;
-  font-stretch: 105%;
-}
 
+/* Surfaces. The names are kept from the first build; they are now flat cards, not glass. */
 .glass {
   background: var(--glass);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 .glass-strong {
   background: var(--glass-strong);
-  border: 1px solid var(--line-2);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop);
 }
 
-/* The one place red glows: the recommended move. */
+/* The one place red shows on a surface: the recommended move. A border, no glow. */
 .glow-accent {
-  box-shadow:
-    0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent),
-    0 0 0 4px var(--accent-soft),
-    0 20px 50px -24px color-mix(in oklab, var(--accent) 60%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 70%, transparent) !important;
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 70%, transparent);
 }
 
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
 }
 
 /* Scrollbars that don't shout */

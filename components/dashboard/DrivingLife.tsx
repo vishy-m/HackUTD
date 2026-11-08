@@ -149,13 +149,40 @@ function MonthlyMiles({ data }: { data: DashboardData }) {
   );
 }
 
+/** What moves the score: one row per factor, a bar for its size. The engine's boilerplate
+ *  sentence ("X contributes N points…") repeats the number, so only other notes are shown. */
+function ScoreFactors({ factors }: { factors: DashboardData["driving"]["scoreFactors"] }) {
+  const max = Math.max(1, ...factors.map((f) => Math.abs(f.impact)));
+  return (
+    <ul className="min-w-0 flex-1 divide-y divide-line border-y border-line" aria-label="What moves your score">
+      {factors.map((f) => {
+        const tenths = Math.round(f.impact * 10);
+        const tone = tenths < 0 ? "bg-warn" : tenths > 0 ? "bg-good" : "bg-line-2";
+        const note = /contributes/i.test(f.detail) ? null : f.detail;
+        return (
+          <li key={f.factor} className="py-2">
+            <div className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_3rem] items-center gap-3 text-sm">
+              <span className="truncate text-ink">{f.factor}</span>
+              <span className="h-1.5 rounded-full bg-line" aria-hidden>
+                <span className={clsx("block h-full rounded-full", tone)} style={{ width: `${(Math.abs(f.impact) / max) * 100}%` }} />
+              </span>
+              <span className={clsx("num text-right font-semibold", tenths < 0 ? "text-warn" : tenths > 0 ? "text-good" : "text-ink-3")}>{signed(f.impact)}</span>
+            </div>
+            {note && <p className="mt-1 text-xs text-ink-3">{note}</p>}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export function DrivingLife({ data }: { data?: DashboardData }) {
   const openReplay = useUiStore((s) => s.openReplay);
-  if (!data) return <Skeleton className="h-[560px] rounded-[22px]" />;
+  if (!data) return <Skeleton className="h-[560px] rounded-xl" />;
   const d = data.driving;
   if (!data.persona.consent.driving) {
     return (
-      <Panel title="Driving life">
+      <Panel title="Trips and driving">
         <Limited source="driving data" what="Trips, your driving score and mileage projections are hidden. Lease math uses your contract allowance instead." />
       </Panel>
     );
@@ -163,7 +190,7 @@ export function DrivingLife({ data }: { data?: DashboardData }) {
   return (
     <Panel
       id="w-driving"
-      title="Driving life"
+      title="Trips and driving"
       aside={
         <>
           {d.smoothStreak >= 3 && (
@@ -177,28 +204,18 @@ export function DrivingLife({ data }: { data?: DashboardData }) {
     >
       <TripHeatmapSlot trips={data.trips} onSelectTrip={(id) => openReplay({ tripId: id })} topDestinations={d.topDestinations} city={data.persona.city} />
 
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_minmax(0,1fr)_minmax(0,1.1fr)]">
-        <div className="flex flex-col items-center md:items-start">
-          <ScoreGauge score={d.score} />
-          <p className="-mt-1 text-center text-xs text-ink-3 md:text-left">Drive Pulse-style score (simulated)</p>
+      <div className="mt-6 grid grid-cols-1 gap-x-10 gap-y-8 xl:grid-cols-2">
+        <div>
+          <h3 className="mb-3 text-sm font-medium text-ink-2">Driving score</h3>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            <div className="flex shrink-0 flex-col items-center">
+              <ScoreGauge score={d.score} />
+              <p className="-mt-1 text-xs text-ink-3">Simulated score</p>
+            </div>
+            <ScoreFactors factors={d.scoreFactors} />
+          </div>
         </div>
         <div>
-          <h3 className="mb-2 text-sm font-medium text-ink-2">What moves your score</h3>
-          <ul className="space-y-2.5">
-            {d.scoreFactors.map((f) => (
-              <li key={f.factor}>
-                <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="text-ink">{f.factor}</span>
-                  <span className={clsx("num font-semibold", Math.round(f.impact * 10) < 0 ? "text-warn" : Math.round(f.impact * 10) > 0 ? "text-good" : "text-ink-3")}>
-                    {signed(f.impact)}
-                  </span>
-                </div>
-                <div className="mt-1 text-xs text-ink-3">{f.detail}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="md:col-span-2 xl:col-span-1">
           <MonthlyMiles data={data} />
         </div>
       </div>
@@ -206,7 +223,7 @@ export function DrivingLife({ data }: { data?: DashboardData }) {
       {data.tripInsights.length > 0 && (
         <ul className="mt-6 grid gap-2 sm:grid-cols-2">
           {data.tripInsights.map((i) => (
-            <li key={i.id} className="rounded-2xl border border-line p-3.5 text-[13px] leading-snug text-ink-2">
+            <li key={i.id} className="rounded-lg border border-line p-3.5 text-[13px] leading-snug text-ink-2">
               {i.text}
               {i.relatedTripId && (
                 <button type="button" onClick={() => openReplay({ tripId: i.relatedTripId! })} className="mt-1.5 block text-[13px] font-medium text-ink underline decoration-line-2 underline-offset-4 hover:decoration-ink">

@@ -68,7 +68,7 @@ async function draftRecommendations(dashboard: DashboardData): Promise<Recommend
         const impactLabel = optionImpactLabel(option);
         const checked = checkGrounding([copy.title, copy.action, copy.why, impactLabel, copy.urgencyLabel].filter(Boolean).join(" "), option);
         if (!checked.grounded) { failed = true; return templates[index]; }
-        return { ...templates[index], ...copy, impactLabel, urgencyLabel: copy.urgencyLabel ?? undefined, action: option.highStakes && !/specialist/i.test(copy.action) ? `${copy.action} A TFS specialist can help.` : copy.action, grounded: true };
+        return { ...templates[index], ...copy, impactLabel, urgencyLabel: copy.urgencyLabel ?? undefined, action: option.highStakes && !/specialist/i.test(copy.action) ? `${/[.!?]$/.test(copy.action) ? copy.action : `${copy.action}.`} A TFS specialist can help.` : copy.action, grounded: true };
       });
       if (!failed) return best;
       if (attempt === 0) diagnostic.record.groundingRetries += 1;

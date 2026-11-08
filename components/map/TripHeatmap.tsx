@@ -282,7 +282,7 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
     });
 
   return (
-    <section ref={rootRef} className={`relative isolate h-full min-h-[360px] w-full overflow-hidden rounded-2xl bg-[#07090f] text-white ${className ?? ""}`} aria-label="Map of all trips, colored by category">
+    <section ref={rootRef} className={`relative isolate h-full min-h-[360px] w-full overflow-hidden rounded-lg bg-[#07090f] text-white ${className ?? ""}`} aria-label="Map of all trips, colored by category">
       <div className="absolute inset-0">
         <div ref={mapEl} className="h-full w-full" />
       </div>
@@ -303,8 +303,8 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
       )}
 
       <header className="absolute inset-x-0 top-0 flex flex-wrap items-start justify-between gap-2 p-3 sm:p-4">
-        <div className="rounded-xl border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-white/50">Places you&apos;ve been</p>
+        <div className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
+          <p className="text-[11px] text-white/50">Places you&apos;ve been</p>
           <p className="text-sm font-semibold">{rows.length} trips · {Math.round(rows.reduce((s, r) => s + r.miles, 0)).toLocaleString("en-US")} mi</p>
         </div>
         <button
@@ -334,7 +334,7 @@ export default function TripHeatmap({ trips, fullTrips, onSelectTrip, className 
 
       <div ref={tipRef} className={`pointer-events-none absolute left-0 top-0 z-10 transition-opacity ${hovered ? "opacity-100" : "opacity-0"}`}>
         {hovered && (
-          <div className="rounded-xl border border-white/15 bg-black/70 px-3 py-2 text-xs shadow-2xl backdrop-blur-md">
+          <div className="rounded-lg border border-white/15 bg-black/70 px-3 py-2 text-xs shadow-2xl backdrop-blur-md">
             <p className="font-semibold">{hovered.label}</p>
             <p className="text-white/60 capitalize">{hovered.category.replace("-", " ")} · {hovered.miles.toFixed(1)} mi · score {hovered.score}</p>
             <p className="mt-0.5 text-white/45">Click to replay in 3D</p>

@@ -21,36 +21,27 @@ import { TopBar } from "./TopBar";
 
 export type DashboardPage = "overview" | "moves" | "finances" | "driving" | "repair";
 
-const pageCopy: Record<Exclude<DashboardPage, "overview">, { eyebrow: string; title: string; description: string }> = {
+const pageCopy: Record<Exclude<DashboardPage, "overview" | "repair">, { title: string; description: string }> = {
   moves: {
-    eyebrow: "Decision center",
-    title: "Your next moves",
-    description: "Compare the opportunities that matter now, ranked around your vehicle, contract, and preferences.",
+    title: "Your moves",
+    description: "Lease end, insurance, payment and protection: the best option in each, ranked for you.",
   },
   finances: {
-    eyebrow: "Financial picture",
-    title: "Contract & money",
-    description: "See your vehicle agreement and monthly cash flow together, without digging through statements.",
+    title: "Contract and payments",
+    description: "Your agreement, payment record, cash flow and insurance premium.",
   },
   driving: {
-    eyebrow: "On the road",
-    title: "Driving insights",
-    description: "Understand how your mileage and driving patterns can shape costs, coverage, and future options.",
-  },
-  repair: {
-    eyebrow: "Vehicle decision",
-    title: "Repair or replace?",
-    description: "Compare the paths using your vehicle, repair, and budget.",
+    title: "Driving",
+    description: "Trips, driving score and monthly miles from the last 90 days.",
   },
 };
 
-function PageIntro({ page }: { page: Exclude<DashboardPage, "overview"> }) {
+function PageIntro({ page }: { page: Exclude<DashboardPage, "overview" | "repair"> }) {
   const copy = pageCopy[page];
   return (
-    <div className="px-1 pt-1 pb-1 sm:pt-2">
-      <p className="text-xs font-semibold tracking-[0.16em] text-accent-ink uppercase">{copy.eyebrow}</p>
-      <h1 className="font-display mt-2 text-3xl leading-tight font-semibold text-ink sm:text-4xl">{copy.title}</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2 sm:text-base">{copy.description}</p>
+    <div className="border-b border-line pb-5">
+      <h1 className="font-display text-[28px] leading-tight text-ink sm:text-[32px]">{copy.title}</h1>
+      <p className="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-ink-2">{copy.description}</p>
     </div>
   );
 }
@@ -82,7 +73,7 @@ export function AppShell({ page = "overview" }: { page?: DashboardPage }) {
       >
         <main id="main" className="min-w-0 space-y-5 lg:space-y-6">
           {error && !data ? (
-            <div role="alert" className="glass rounded-[22px] p-6 text-sm text-ink-2">
+            <div role="alert" className="glass rounded-xl p-6 text-sm text-ink-2">
               Your dashboard didn&apos;t load ({error}). Check that the dev server is running, then reload the page.
             </div>
           ) : null}

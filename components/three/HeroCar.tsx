@@ -132,7 +132,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
       tabIndex={0}
       onKeyDown={onKey}
       aria-label={`3D view of your ${vehicle.year} Toyota ${vehicle.model}. Drag to orbit, keys 1 to 4 focus hotspots, R resets the view.`}
-      className={`nm-hero relative isolate h-full min-h-[320px] w-full overflow-hidden rounded-2xl bg-[radial-gradient(120%_90%_at_50%_10%,#1d2230_0%,#0b0d13_55%,#05060a_100%)] text-white outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${reducedMotion ? "nm-reduced" : ""} ${className ?? ""}`}
+      className={`nm-hero relative isolate h-full min-h-[320px] w-full overflow-hidden rounded-lg bg-[radial-gradient(120%_90%_at_50%_10%,#1d2230_0%,#0b0d13_55%,#05060a_100%)] text-white outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${reducedMotion ? "nm-reduced" : ""} ${className ?? ""}`}
     >
       {webgl === false ? (
         fallback
@@ -206,8 +206,8 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
 
       {/* Overlay: title, legend, reset */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3 sm:p-4">
-        <div className="rounded-xl border border-white/10 bg-black/35 px-3 py-2 backdrop-blur-md">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-white/50">Your vehicle</p>
+        <div className="rounded-lg border border-white/10 bg-black/35 px-3 py-2 backdrop-blur-md">
+          <p className="text-[11px] text-white/55">Your vehicle</p>
           <p className="text-sm font-semibold">{shown.year} Toyota {shown.model}</p>
         </div>
         <button
@@ -245,7 +245,7 @@ export default function HeroCar({ vehicle, upgradePreview, className, hotspotLab
             Preview: <span className="font-semibold text-white">{upgradePreview.name}</span>
           </p>
         )}
-        <p className="hidden w-full text-[10px] text-white/40 sm:block">Drag to orbit · scroll to zoom · 1–4 hotspots · R reset</p>
+        <p className="hidden w-full text-[10px] text-white/40 sm:block">Drag to rotate · scroll to zoom</p>
       </div>
     </div>
   );

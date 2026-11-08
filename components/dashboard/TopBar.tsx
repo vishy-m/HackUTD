@@ -23,6 +23,17 @@ export function ShiftMark({ className }: { className?: string }) {
   );
 }
 
+/** Two-letter initials in place of an emoji avatar. */
+export function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 export function situation(p: Persona) {
   const role = p.displayName.split("·")[1]?.trim() ?? p.city;
   const c = p.contract;
@@ -73,10 +84,10 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
             setOpen(true);
           }
         }}
-        className="flex h-12 max-w-full min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-[var(--glass-hi)] py-1.5 pr-2.5 pl-1.5 text-left transition-colors hover:border-line-2 sm:gap-3 sm:pr-3"
+        className="flex h-11 max-w-full min-w-0 items-center gap-2.5 rounded-lg border border-line py-1 pr-2.5 pl-1.5 text-left transition-colors hover:border-line-2 hover:bg-[var(--glass-hi)] sm:pr-3"
       >
-        <span className="hidden size-9 shrink-0 place-items-center rounded-xl bg-[var(--glass)] text-lg min-[420px]:grid" aria-hidden>
-          {p.avatarEmoji}
+        <span className="hidden size-8 shrink-0 place-items-center rounded-md bg-ink text-[12px] font-semibold text-bg min-[420px]:grid" aria-hidden>
+          {initials(p.name)}
         </span>
         <span className="min-w-0 pl-1.5 min-[420px]:pl-0">
           <span className="block truncate text-sm leading-tight font-semibold text-ink">{p.name}</span>
@@ -111,7 +122,7 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 520, damping: 36 }}
-            className="glass-strong absolute top-[calc(100%+8px)] left-0 z-40 w-[min(340px,calc(100vw-32px))] origin-top-left rounded-2xl p-1.5 outline-none"
+            className="glass-strong absolute top-[calc(100%+6px)] left-0 z-40 w-[min(340px,calc(100vw-32px))] origin-top-left rounded-lg p-1 outline-none"
           >
             {personaOrder.map((id, i) => {
               const q = mockPersonas[id];
@@ -125,12 +136,12 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
                   onMouseEnter={() => setActive(i)}
                   onClick={() => choose(id)}
                   className={clsx(
-                    "flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5",
+                    "flex cursor-pointer items-center gap-3 rounded-md px-2.5 py-2",
                     i === active && "bg-[var(--glass-hi)]",
                   )}
                 >
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[var(--glass)] text-lg" aria-hidden>
-                    {q.avatarEmoji}
+                  <span className="grid size-8 shrink-0 place-items-center rounded-md bg-ink text-[12px] font-semibold text-bg" aria-hidden>
+                    {initials(q.name)}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-ink">{q.name}</span>
@@ -160,13 +171,13 @@ export function TopBar({ data }: { data?: DashboardData }) {
   const navItems = [
     { href: "/", label: "Overview" },
     { href: "/moves", label: "Moves" },
-    { href: "/repair", label: "Repair help" },
+    { href: "/repair", label: "Repair or replace" },
     { href: "/finances", label: "Finances" },
     { href: "/driving", label: "Driving" },
   ];
 
   const primaryNav = (mobile = false) => (
-    <nav aria-label="Dashboard" className={clsx(mobile ? "flex w-full gap-1 overflow-x-auto px-3 py-2 sm:px-6" : "hidden items-center gap-1 xl:flex")}>
+    <nav aria-label="Dashboard" className={clsx(mobile ? "flex w-full overflow-x-auto px-1 sm:px-3" : "hidden h-16 items-stretch xl:flex")}>
       {navItems.map((item) => {
         const active = pathname === item.href;
         return (
@@ -175,12 +186,12 @@ export function TopBar({ data }: { data?: DashboardData }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={clsx(
-              "relative inline-flex h-9 shrink-0 items-center rounded-xl px-3 text-sm font-medium transition-colors",
-              active ? "bg-[var(--glass-hi)] text-ink" : "text-ink-3 hover:bg-[var(--glass-hi)] hover:text-ink",
+              "relative inline-flex h-11 shrink-0 items-center px-3 text-sm font-medium transition-colors xl:h-16",
+              active ? "text-ink" : "text-ink-3 hover:text-ink",
             )}
           >
             {item.label}
-            {active && <span className="absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-accent" aria-hidden />}
+            {active && <span className="absolute inset-x-3 bottom-0 h-0.5 bg-ink" aria-hidden />}
           </Link>
         );
       })}
@@ -188,35 +199,35 @@ export function TopBar({ data }: { data?: DashboardData }) {
   );
 
   return (
-    <header className="sticky top-0 z-30 mb-4 border-b border-line bg-[color-mix(in_oklab,var(--bg)_72%,transparent)] backdrop-blur-xl sm:mb-6">
+    <header className="sticky top-0 z-30 mb-5 border-b border-line bg-[var(--glass)] sm:mb-7">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded-lg focus:bg-ink focus:px-3 focus:py-2 focus:text-bg">
         Skip to dashboard
       </a>
       <div className="mx-auto flex h-16 max-w-[1680px] items-center gap-2 px-3 sm:gap-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2 rounded-lg pr-1 text-ink" aria-label="Next Move Copilot home">
           <ShiftMark className="size-7" />
-          <span className="font-display hidden text-[17px] font-semibold md:inline">Next Move</span>
+          <span className="font-display hidden text-[17px] md:inline">Next Move</span>
         </Link>
-        <span className="hidden h-6 w-px bg-line md:block" aria-hidden />
+        <span className="hidden h-6 w-px bg-line-2 md:block" aria-hidden />
         <PersonaSwitcher current={personaId} />
         {primaryNav()}
         <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5">
           <button
             type="button"
             onClick={() => openConsent(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl px-2.5 text-sm font-medium text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink sm:px-3"
+            className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 text-sm font-medium text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink sm:px-3"
           >
             <ShieldCheck size={17} />
             <span className="hidden sm:inline">Your data</span>
             {consentOff > 0 && (
-              <span className="num rounded-full bg-warn-soft px-1.5 text-[11px] font-semibold text-warn" aria-label={`${consentOff} sources off`}>
+              <span className="num rounded-md bg-warn-soft px-1.5 text-[11px] font-semibold text-warn" aria-label={`${consentOff} sources off`}>
                 {consentOff} off
               </span>
             )}
           </button>
           <Link
             href="/tfs"
-            className="inline-flex h-10 items-center rounded-xl px-2 text-sm font-medium whitespace-nowrap text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink sm:px-3"
+            className="inline-flex h-10 items-center rounded-lg px-2 text-sm font-medium whitespace-nowrap text-ink-2 transition-colors hover:bg-[var(--glass-hi)] hover:text-ink sm:px-3"
             aria-label="TFS view"
           >
             TFS<span className="hidden sm:inline">&nbsp;view</span>

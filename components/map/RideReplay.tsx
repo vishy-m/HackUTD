@@ -450,7 +450,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
   return (
     <section
       ref={rootRef}
-      className={`nm-replay relative isolate h-full min-h-[420px] w-full overflow-hidden rounded-2xl bg-[#07090f] text-white ${reducedMotion ? "nm-reduced" : ""} ${className ?? ""}`}
+      className={`nm-replay relative isolate h-full min-h-[420px] w-full overflow-hidden rounded-lg bg-[#07090f] text-white ${reducedMotion ? "nm-reduced" : ""} ${className ?? ""}`}
       aria-label={`3D replay of trip to ${trip.destinationLabel}`}
     >
       {/* Wrapper: mapbox-gl.css forces position:relative on the map element itself. */}
@@ -474,8 +474,8 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
 
       {/* Header */}
       <header className="absolute inset-x-0 top-0 z-[5] flex items-start justify-between gap-3 p-3 sm:p-4">
-        <div className="min-w-0 rounded-xl border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/55">Ride replay · {trip.category.replace("-", " ")}</p>
+        <div className="min-w-0 rounded-lg border border-white/10 bg-black/40 px-3 py-2 backdrop-blur-md">
+          <p className="text-[11px] font-medium text-white/55">Ride replay · {trip.category.replace("-", " ")}</p>
           <h2 className="truncate text-sm font-semibold sm:text-base">{trip.destinationLabel}</h2>
           <p className="text-xs text-white/60">
             {date} · {trip.miles.toFixed(1)} mi · score <span className="font-semibold text-white">{trip.score}</span>
@@ -494,8 +494,8 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
 
       {/* Legend */}
       {legendOpen && (
-        <aside className="absolute right-3 top-[76px] z-[5] hidden w-48 rounded-xl border border-white/10 bg-black/45 p-3 text-xs text-white/75 backdrop-blur-md sm:block sm:right-4">
-          <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-white/50">Legend</p>
+        <aside className="absolute right-3 top-[76px] z-[5] hidden w-48 rounded-lg border border-white/10 bg-black/45 p-3 text-xs text-white/75 backdrop-blur-md sm:block sm:right-4">
+          <p className="mb-2 text-[11px] font-medium text-white/50">Legend</p>
           <ul className="space-y-1.5">
             <li className="flex items-center gap-2"><span className="h-1 w-5 rounded-full" style={{ background: ROUTE_COLORS.normal, boxShadow: `0 0 8px ${ROUTE_COLORS.normal}` }} />Driven route</li>
             <li className="flex items-center gap-2"><span className="h-1 w-5 rounded-full" style={{ background: ROUTE_COLORS.speeding, boxShadow: `0 0 8px ${ROUTE_COLORS.speeding}` }} />Speeding stretch</li>
@@ -519,8 +519,8 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
       {/* HUD + controls */}
       <div className="absolute inset-x-0 bottom-0 z-[5] p-3 sm:p-4">
         <div className="mb-3 flex flex-wrap items-end gap-2 sm:gap-3">
-          <div className="rounded-xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-md">
-            <p className="text-[10px] uppercase tracking-[0.14em] text-white/50">Speed</p>
+          <div className="rounded-lg border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-md">
+            <p className="text-[11px] text-white/50">Speed</p>
             <p className="font-mono text-2xl font-semibold tabular-nums leading-none sm:text-3xl"><span ref={hudSpeed}>0</span><span className="ml-1 text-xs font-normal text-white/50">mph</span></p>
           </div>
           <Stat label="Miles"><span ref={hudMiles}>0.0</span><span className="text-white/40"> / {trip.miles.toFixed(1)}</span></Stat>
@@ -529,7 +529,7 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
           <Stat label="Score change"><span ref={hudScore} className="data-[neg=1]:text-[#FF6B7A]">±0</span></Stat>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/50 p-2.5 backdrop-blur-md sm:p-3">
+        <div className="rounded-lg border border-white/10 bg-black/50 p-2.5 backdrop-blur-md sm:p-3">
           {/* Scrubber */}
           <div className="relative mx-1 mb-2.5 h-6">
             <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-white/12 bg-white/10" />
@@ -590,8 +590,8 @@ export default function RideReplay({ trip, onClose, className, paintHex = "#EB0A
 
 function Stat({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-md ${className ?? ""}`}>
-      <p className="text-[10px] uppercase tracking-[0.14em] text-white/50">{label}</p>
+    <div className={`rounded-lg border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-md ${className ?? ""}`}>
+      <p className="text-[11px] text-white/50">{label}</p>
       <p className="font-mono text-sm font-semibold tabular-nums sm:text-base">{children}</p>
     </div>
   );

@@ -61,9 +61,9 @@ export function ConsentSheet({ data }: { data?: DashboardData }) {
           const on = consent[s.id];
           const Icon = s.icon;
           return (
-            <li key={s.id} className="rounded-[20px] border border-line p-4">
+            <li key={s.id} className="rounded-xl border border-line p-4">
               <div className="flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--glass-hi)] text-ink-2">
+                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--glass-hi)] text-ink-2">
                   <Icon size={18} />
                 </span>
                 <div className="min-w-0 flex-1">

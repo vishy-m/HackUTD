@@ -139,7 +139,7 @@ export function TripHeatmapSlot({
   }, [key]);
   const ready = full && full.key === key && full.trips.length > 0;
   return (
-    <div className="relative h-[260px] overflow-hidden rounded-2xl border border-line bg-[var(--glass-hi)] sm:h-[340px]">
+    <div className="relative h-[260px] overflow-hidden rounded-lg border border-line bg-[var(--glass-hi)] sm:h-[340px]">
       {ready ? (
         <TripHeatmap trips={trips} fullTrips={full.trips} onSelectTrip={onSelectTrip} className="absolute inset-0 h-full w-full" />
       ) : (

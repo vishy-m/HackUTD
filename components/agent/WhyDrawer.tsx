@@ -96,7 +96,7 @@ export function WhyDrawer({ data }: { data?: DashboardData }) {
           {o.math.length > 0 && (
             <section>
               <H>Key numbers</H>
-              <ul className="divide-y divide-line rounded-2xl border border-line">
+              <ul className="divide-y divide-line rounded-lg border border-line">
                 {o.math.map((m) => (
                   <li key={m.label} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3">
                     <div className="min-w-0">

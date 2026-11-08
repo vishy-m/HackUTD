@@ -43,7 +43,7 @@ export function MoveTiles({ data }: { data?: DashboardData }) {
     return (
       <div className="grid grid-cols-2 gap-3 lg:gap-4 2xl:grid-cols-4">
         {ORDER.map((m) => (
-          <Skeleton key={m} className="h-[150px] rounded-[22px]" />
+          <Skeleton key={m} className="h-[150px] rounded-xl" />
         ))}
       </div>
     );
@@ -66,20 +66,20 @@ export function MoveTiles({ data }: { data?: DashboardData }) {
             onClick={() => setOpenMove(m)}
             aria-label={`${moveLabel[m]}: ${o?.title ?? "no options"}. Open details`}
             className={clsx(
-              "group glass relative flex min-h-[150px] flex-col justify-between rounded-[22px] p-4 text-left transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-line-2 sm:p-5",
+              "group glass relative flex min-h-[150px] flex-col justify-between rounded-xl p-4 text-left transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-ink-3 sm:p-5",
               isTop && "glow-accent",
               notApplicable && "opacity-70",
             )}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-ink-2">
                 <Icon size={16} className={isTop ? "text-accent-ink" : "text-ink-3"} />
                 {moveLabel[m]}
               </span>
               {isTop ? (
-                <span className="text-xs font-semibold text-accent-ink">Top pick</span>
+                <span className="text-xs font-medium text-accent-ink">Recommended</span>
               ) : rank > 0 ? (
-                <span className="num text-xs text-ink-3">#{rank + 1}</span>
+                <span className="num text-xs text-ink-3">Rank {rank + 1}</span>
               ) : null}
             </div>
             <div className="mt-3">

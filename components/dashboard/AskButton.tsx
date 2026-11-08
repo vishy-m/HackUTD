@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Sparkles } from "lucide-react";
+import { MessageSquareText } from "lucide-react";
 import { useDataStore } from "@/lib/client/data-store";
 import { useUiStore } from "@/lib/client/ui-store";
 
@@ -33,7 +33,7 @@ export function AskButton({ widget, optionId, tripId, label, className }: { widg
         className,
       )}
     >
-      <Sparkles size={14} />
+      <MessageSquareText size={14} />
       Ask
     </button>
   );

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export type Tone = "neutral" | "good" | "warn" | "accent" | "quiet";
 
 const tones: Record<Tone, string> = {
-  neutral: "bg-[var(--glass-hi)] text-ink-2 border-line",
+  neutral: "bg-transparent text-ink-2 border-line-2",
   quiet: "bg-transparent text-ink-3 border-line",
   good: "bg-good-soft text-good border-transparent",
   warn: "bg-warn-soft text-warn border-transparent",
@@ -15,7 +15,7 @@ export function Chip({ tone = "neutral", icon, children, className }: { tone?: T
   return (
     <span
       className={clsx(
-        "inline-flex h-6 items-center gap-1 rounded-full border px-2.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex h-6 items-center gap-1 rounded-md border px-2 text-xs font-medium whitespace-nowrap",
         tones[tone],
         className,
       )}

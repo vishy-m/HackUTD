@@ -8,7 +8,7 @@ import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { Chip } from "@/components/ui/Chip";
 import { Drawer } from "@/components/ui/Overlay";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { ShiftMark } from "@/components/dashboard/TopBar";
+import { initials, ShiftMark } from "@/components/dashboard/TopBar";
 import { getTfs } from "@/lib/client/api";
 import { consentLabel, moveLabel, shortDate, timeOfDay, usd } from "@/lib/client/format";
 import { useReducedMotionSync } from "@/lib/client/hooks";
@@ -17,7 +17,7 @@ import type { HandoffPacket, TfsData } from "@/lib/types";
 
 function Kpi({ label, value, format, note }: { label: string; value: number; format?: (n: number) => string; note?: string }) {
   return (
-    <div className="glass rounded-[20px] p-4 sm:p-5">
+    <div className="glass rounded-xl p-4 sm:p-5">
       <div className="text-xs text-ink-3">{label}</div>
       <div className="num mt-1.5 text-[28px] leading-none font-semibold text-ink sm:text-[32px]">
         <AnimatedNumber value={value} format={format} />
@@ -53,7 +53,7 @@ function PacketDrawer({ packet, onClose }: { packet: HandoffPacket | null; onClo
           {packet.numbers.length > 0 && (
             <section>
               <h3 className="mb-2 text-[13px] font-semibold text-ink-2">Numbers the customer saw</h3>
-              <dl className="divide-y divide-line rounded-2xl border border-line">
+              <dl className="divide-y divide-line rounded-lg border border-line">
                 {packet.numbers.map((n) => (
                   <div key={n.label} className="flex items-baseline justify-between gap-4 px-4 py-2.5 text-sm">
                     <dt className="text-ink-2">{n.label}</dt>
@@ -82,7 +82,7 @@ function PacketDrawer({ packet, onClose }: { packet: HandoffPacket | null; onClo
               </ul>
             </section>
           )}
-          <p className="rounded-2xl bg-[var(--glass-hi)] p-4 text-[13px] text-ink-2">No re-asking needed: the specialist starts with the move, the math and the customer&apos;s preferences.</p>
+          <p className="rounded-lg bg-[var(--glass-hi)] p-4 text-[13px] text-ink-2">No re-asking needed: the specialist starts with the move, the math and the customer&apos;s preferences.</p>
         </div>
       )}
     </Drawer>
@@ -121,20 +121,20 @@ export function TfsView() {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_oklab,var(--bg)_72%,transparent)] backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b border-line bg-[var(--glass)]">
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-3 px-4 sm:px-6">
-          <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink">
+          <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-medium text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink">
             <ArrowLeft size={16} />
             <span className="hidden sm:inline">Customer view</span>
           </Link>
           <span className="h-6 w-px bg-line" aria-hidden />
           <ShiftMark className="size-6 text-ink" />
-          <h1 className="font-display text-[17px] font-semibold text-ink">TFS Insight</h1>
+          <h1 className="font-display text-[17px] text-ink">TFS Insight</h1>
           <span className="hidden text-sm text-ink-3 md:inline">Internal view</span>
           <button
             type="button"
             onClick={() => void load()}
-            className="ml-auto inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
+            className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-ink-2 hover:bg-[var(--glass-hi)] hover:text-ink"
             aria-label="Refresh"
           >
             <RefreshCw size={15} className={clsx(refreshing && "animate-spin")} />
@@ -153,11 +153,11 @@ export function TfsView() {
               <Kpi label="Open handoff packets" value={packets.length} />
             </>
           ) : (
-            [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[104px] rounded-[20px]" />)
+            [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[104px] rounded-xl" />)
           )}
         </div>
 
-        <section aria-labelledby="customers-h" className="glass overflow-hidden rounded-[22px]">
+        <section aria-labelledby="customers-h" className="glass overflow-hidden rounded-xl">
           <h2 id="customers-h" className="px-5 pt-5 pb-3 text-[15px] font-semibold text-ink sm:px-6">
             Customers
           </h2>
@@ -189,8 +189,8 @@ export function TfsView() {
                     <tr key={x.personaId}>
                       <td className="px-5 py-3.5 sm:px-6">
                         <div className="flex items-center gap-3">
-                          <span className="grid size-8 place-items-center rounded-lg bg-[var(--glass-hi)]" aria-hidden>
-                            {p.avatarEmoji}
+                          <span className="grid size-8 place-items-center rounded-md bg-ink text-[12px] font-semibold text-bg" aria-hidden>
+                            {initials(p.name)}
                           </span>
                           <div>
                             <div className="font-medium text-ink">{p.name}</div>
@@ -222,12 +222,12 @@ export function TfsView() {
         </section>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <section aria-labelledby="packets-h" className="glass rounded-[22px] p-5 sm:p-6">
+          <section aria-labelledby="packets-h" className="glass rounded-xl p-5 sm:p-6">
             <h2 id="packets-h" className="mb-4 text-[15px] font-semibold text-ink">
               Handoff packets
             </h2>
             {packets.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line-2 px-6 py-10 text-center">
+              <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-line-2 px-6 py-10 text-center">
                 <Inbox size={22} className="text-ink-3" />
                 <p className="text-sm text-ink">No packets yet</p>
                 <p className="max-w-[40ch] text-[13px] text-ink-3">When a customer accepts a move in the customer view, its packet lands here with everything a specialist needs.</p>
@@ -244,9 +244,9 @@ export function TfsView() {
                       <button
                         type="button"
                         onClick={() => setOpen(pk)}
-                        className="flex w-full items-center gap-3 rounded-2xl border border-line p-3.5 text-left transition-colors hover:border-line-2 hover:bg-[var(--glass-hi)]"
+                        className="flex w-full items-center gap-3 rounded-lg border border-line p-3.5 text-left transition-colors hover:border-line-2 hover:bg-[var(--glass-hi)]"
                       >
-                        <span className={clsx("grid size-9 shrink-0 place-items-center rounded-xl", pk.mode === "specialist-callback" ? "bg-warn-soft text-warn" : "bg-good-soft text-good")}>
+                        <span className={clsx("grid size-9 shrink-0 place-items-center rounded-lg", pk.mode === "specialist-callback" ? "bg-warn-soft text-warn" : "bg-good-soft text-good")}>
                           {pk.mode === "specialist-callback" ? <PhoneCall size={16} /> : <UserRound size={16} />}
                         </span>
                         <div className="min-w-0 flex-1">
@@ -263,7 +263,7 @@ export function TfsView() {
               </ul>
             )}
           </section>
-          <section aria-labelledby="assump-h" className="glass rounded-[22px] p-5 sm:p-6">
+          <section aria-labelledby="assump-h" className="glass rounded-xl p-5 sm:p-6">
             <h2 id="assump-h" className="mb-4 text-[15px] font-semibold text-ink">
               Assumptions
             </h2>
