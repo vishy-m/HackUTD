@@ -273,3 +273,120 @@ input[type="range"].range.agent-moved::-webkit-slider-thumb {
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------ stage and story */
+
+/* Height of the sticky top bar: two rows below xl (brand + nav), one row from xl up. */
+:root {
+  --hdr: 109px;
+}
+@media (min-width: 1280px) {
+  :root {
+    --hdr: 64px;
+  }
+}
+
+/* Callout pinned to a part of the car by the 3D stage (positioned every frame). */
+.nm-callout {
+  will-change: transform, opacity;
+  transition: opacity 120ms linear;
+}
+.nm-callout-dot {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 22%, transparent);
+}
+.nm-callout-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 1.5px solid var(--accent);
+  animation: nm-callout-pulse 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.nm-callout-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: 1.5px;
+  background: var(--ink);
+  transform: rotate(-38deg);
+  transform-origin: 0 50%;
+}
+.nm-callout-label {
+  position: absolute;
+  left: 44px;
+  top: -58px;
+  white-space: nowrap;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-pop);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+@keyframes nm-callout-pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+/* Text links inside the story: an underline that draws on hover. */
+.story-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat;
+  padding-bottom: 2px;
+  transition: background-size 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.story-link:hover {
+  background-size: 100% 1.5px;
+}
+.story-link svg {
+  transition: transform 200ms;
+}
+.story-link:hover svg {
+  transform: translateX(3px);
+}
+
+.story-bob {
+  animation: story-bob 1.8s ease-in-out infinite;
+}
+@keyframes story-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+/* Phones and tablets: chapter copy sits under the car on a fade of the page colour. */
+@media (max-width: 1023px) {
+  .story-copy {
+    max-width: none;
+    margin-inline: -20px;
+    width: calc(100% + 40px);
+    padding: 64px 20px 0;
+    background: linear-gradient(to top, var(--bg) 72%, color-mix(in oklab, var(--bg) 0%, transparent));
+  }
+}

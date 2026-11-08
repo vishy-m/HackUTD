@@ -199,7 +199,7 @@ export function TopBar({ data }: { data?: DashboardData }) {
   );
 
   return (
-    <header className="sticky top-0 z-30 mb-5 border-b border-line bg-[var(--glass)] sm:mb-7">
+    <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_oklab,var(--bg)_82%,transparent)] backdrop-blur-xl backdrop-saturate-150">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded-lg focus:bg-ink focus:px-3 focus:py-2 focus:text-bg">
         Skip to dashboard
       </a>

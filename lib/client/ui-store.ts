@@ -39,7 +39,7 @@ export const useUiStore = create<UiState>((set) => ({
   replay: null,
   openMove: null,
   whatIf: {},
-  agentPanelOpen: true,
+  agentPanelOpen: false, // the copilot opens over the stage on demand
   agentContext: null,
   reducedMotion: false,
 

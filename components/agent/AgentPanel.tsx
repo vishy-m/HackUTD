@@ -222,6 +222,7 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
   const setOpen = useUiStore((s) => s.setAgentPanelOpen);
   const personaId = useUiStore((s) => s.personaId);
   const recCount = useDataStore((s) => s.agent[personaId]?.recommendations.filter((r) => r.status === "proposed").length ?? 0);
+  const reduced = useUiStore((s) => s.reducedMotion);
 
   // On phones/tablets the panel is a bottom sheet: start closed so the dashboard shows first.
   useEffect(() => {
@@ -240,13 +241,14 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 80, opacity: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 30 }}
-              className="glass-strong fixed bottom-4 left-1/2 z-40 flex h-14 -translate-x-1/2 items-center gap-3 rounded-lg py-2 pr-5 pl-2"
+              className="glass-strong fixed right-4 bottom-4 z-40 flex h-14 items-center gap-3 rounded-lg p-2 sm:pr-5"
               aria-label="Open copilot"
             >
-              <span className="grid size-10 place-items-center rounded-md bg-ink text-bg">
+              <span className="relative grid size-10 place-items-center rounded-md bg-ink text-bg">
                 <MessageSquareText size={18} />
+                {recCount > 0 && <span className="num absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-accent text-[11px] font-semibold text-white">{recCount}</span>}
               </span>
-              <span className="text-left">
+              <span className="hidden text-left sm:block">
                 <span className="block text-sm font-semibold text-ink">Copilot</span>
                 <span className="block text-xs text-ink-3">{recCount ? `${recCount} recommendations` : "Ask about your car or contract"}</span>
               </span>
@@ -260,35 +262,56 @@ export function AgentPanel({ data }: { data?: DashboardData }) {
     );
   }
 
-  if (!open) {
-    return (
-      <aside className="sticky top-[132px] h-fit xl:top-[88px]">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          aria-label="Show copilot panel"
-          className="glass flex w-16 flex-col items-center gap-3 rounded-xl py-4 text-ink-2 hover:text-ink"
-        >
-          <span className="grid size-9 place-items-center rounded-lg bg-ink text-bg">
-            <MessageSquareText size={17} />
-          </span>
-          {recCount > 0 && <span className="num text-xs font-semibold">{recCount}</span>}
-        </button>
-      </aside>
-    );
-  }
-
+  // Desktop: a floating button, and a panel that slides over the stage from the right.
   return (
-    <aside aria-label="Copilot" className="glass sticky top-[132px] flex h-[calc(100dvh-148px)] min-h-[520px] flex-col overflow-hidden rounded-xl xl:top-[88px] xl:h-[calc(100dvh-104px)]">
-      <div className="border-b border-line px-5 py-4">
-        <PanelHeader data={data} onClose={() => setOpen(false)} />
-      </div>
-      <div data-scroll className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 py-5">
-        <PanelBody key={data?.persona.id ?? "loading"} data={data} />
-      </div>
-      <div className="border-t border-line px-4 py-3.5">
-        <ChatInput />
-      </div>
-    </aside>
+    <>
+      <AnimatePresence>
+        {!open && (
+          <motion.button
+            key="copilot-fab"
+            type="button"
+            onClick={() => setOpen(true)}
+            initial={reduced ? false : { y: 24, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 24, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            className="glass-strong fixed right-6 bottom-6 z-40 flex h-14 items-center gap-3 rounded-lg py-2 pr-5 pl-2 transition-transform hover:-translate-y-0.5"
+            aria-label="Open copilot"
+          >
+            <span className="relative grid size-10 place-items-center rounded-md bg-ink text-bg">
+              <MessageSquareText size={18} />
+              {recCount > 0 && <span className="num absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-accent text-[11px] font-semibold text-white">{recCount}</span>}
+            </span>
+            <span className="text-left">
+              <span className="block text-sm font-semibold text-ink">Copilot</span>
+              <span className="block text-xs text-ink-3">{recCount ? `${recCount} recommendations` : "Ask about your car or contract"}</span>
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {open && (
+          <motion.aside
+            key="copilot-panel"
+            aria-label="Copilot"
+            initial={reduced ? false : { x: 48, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 48, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 340, damping: 34 }}
+            className="glass-strong fixed top-[calc(var(--hdr)+12px)] right-4 bottom-4 z-40 flex w-[420px] flex-col overflow-hidden rounded-xl"
+          >
+            <div className="border-b border-line px-5 py-4">
+              <PanelHeader data={data} onClose={() => setOpen(false)} />
+            </div>
+            <div data-scroll className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 py-5">
+              <PanelBody key={data?.persona.id ?? "loading"} data={data} />
+            </div>
+            <div className="border-t border-line px-4 py-3.5">
+              <ChatInput />
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
