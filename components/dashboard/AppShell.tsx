@@ -18,7 +18,38 @@ import { MoveTiles } from "./MoveTiles";
 import { RideReplaySlot } from "./RideReplaySlot";
 import { TopBar } from "./TopBar";
 
-export function AppShell() {
+export type DashboardPage = "overview" | "moves" | "finances" | "driving";
+
+const pageCopy: Record<Exclude<DashboardPage, "overview">, { eyebrow: string; title: string; description: string }> = {
+  moves: {
+    eyebrow: "Decision center",
+    title: "Your next moves",
+    description: "Compare the opportunities that matter now, ranked around your vehicle, contract, and preferences.",
+  },
+  finances: {
+    eyebrow: "Financial picture",
+    title: "Contract & money",
+    description: "See your vehicle agreement and monthly cash flow together, without digging through statements.",
+  },
+  driving: {
+    eyebrow: "On the road",
+    title: "Driving insights",
+    description: "Understand how your mileage and driving patterns can shape costs, coverage, and future options.",
+  },
+};
+
+function PageIntro({ page }: { page: Exclude<DashboardPage, "overview"> }) {
+  const copy = pageCopy[page];
+  return (
+    <div className="px-1 pt-1 pb-1 sm:pt-2">
+      <p className="text-xs font-semibold tracking-[0.16em] text-accent-ink uppercase">{copy.eyebrow}</p>
+      <h1 className="font-display mt-2 text-3xl leading-tight font-semibold text-ink sm:text-4xl">{copy.title}</h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2 sm:text-base">{copy.description}</p>
+    </div>
+  );
+}
+
+export function AppShell({ page = "overview" }: { page?: DashboardPage }) {
   useReducedMotionSync();
   const personaId = useUiStore((s) => s.personaId);
   const panelOpen = useUiStore((s) => s.agentPanelOpen);
@@ -49,13 +80,33 @@ export function AppShell() {
               Your dashboard didn&apos;t load ({error}). Check that the dev server is running, then reload the page.
             </div>
           ) : null}
-          <HeroStage data={data} />
-          <MoveTiles data={data} />
-          <div className="grid grid-cols-1 gap-5 lg:gap-6 2xl:grid-cols-2">
-            <ContractCard data={data} />
-            <MoneyCard data={data} />
-          </div>
-          <DrivingLife data={data} />
+          {page === "overview" && (
+            <>
+              <HeroStage data={data} />
+              <MoveTiles data={data} />
+            </>
+          )}
+          {page === "moves" && (
+            <>
+              <PageIntro page="moves" />
+              <MoveTiles data={data} />
+            </>
+          )}
+          {page === "finances" && (
+            <>
+              <PageIntro page="finances" />
+              <div className="grid grid-cols-1 gap-5 lg:gap-6 2xl:grid-cols-2">
+                <ContractCard data={data} />
+                <MoneyCard data={data} />
+              </div>
+            </>
+          )}
+          {page === "driving" && (
+            <>
+              <PageIntro page="driving" />
+              <DrivingLife data={data} />
+            </>
+          )}
           <Footer />
         </main>
         <AgentPanel data={data} />

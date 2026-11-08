@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { Check, ChevronDown, Moon, PanelRightClose, PanelRightOpen, ShieldCheck, Sun } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { IconButton } from "@/components/ui/Button";
@@ -149,12 +150,41 @@ function PersonaSwitcher({ current }: { current: PersonaId }) {
 }
 
 export function TopBar({ data }: { data?: DashboardData }) {
+  const pathname = usePathname();
   const personaId = useUiStore((s) => s.personaId);
   const panelOpen = useUiStore((s) => s.agentPanelOpen);
   const setPanel = useUiStore((s) => s.setAgentPanelOpen);
   const openConsent = useOverlayStore((s) => s.setConsentOpen);
   const [theme, setTheme] = useTheme();
   const consentOff = data ? Object.values(data.persona.consent).filter((v) => !v).length : 0;
+  const navItems = [
+    { href: "/", label: "Overview" },
+    { href: "/moves", label: "Moves" },
+    { href: "/finances", label: "Finances" },
+    { href: "/driving", label: "Driving" },
+  ];
+
+  const primaryNav = (mobile = false) => (
+    <nav aria-label="Dashboard" className={clsx(mobile ? "flex w-full gap-1 overflow-x-auto px-3 py-2 sm:px-6" : "hidden items-center gap-1 lg:flex")}>
+      {navItems.map((item) => {
+        const active = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={active ? "page" : undefined}
+            className={clsx(
+              "relative inline-flex h-9 shrink-0 items-center rounded-xl px-3 text-sm font-medium transition-colors",
+              active ? "bg-[var(--glass-hi)] text-ink" : "text-ink-3 hover:bg-[var(--glass-hi)] hover:text-ink",
+            )}
+          >
+            {item.label}
+            {active && <span className="absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-accent" aria-hidden />}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 
   return (
     <header className="sticky top-0 z-30 mb-4 border-b border-line bg-[color-mix(in_oklab,var(--bg)_72%,transparent)] backdrop-blur-xl sm:mb-6">
@@ -168,6 +198,7 @@ export function TopBar({ data }: { data?: DashboardData }) {
         </Link>
         <span className="hidden h-6 w-px bg-line md:block" aria-hidden />
         <PersonaSwitcher current={personaId} />
+        {primaryNav()}
         <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1.5">
           <button
             type="button"
@@ -199,6 +230,7 @@ export function TopBar({ data }: { data?: DashboardData }) {
           </span>
         </div>
       </div>
+      <div className="border-t border-line lg:hidden">{primaryNav(true)}</div>
     </header>
   );
 }
